@@ -1,43 +1,115 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Gift For You 💝</title>
-  <link rel="stylesheet" href="style.css" />
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Happy Birthday 💖</title>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <div class="wrap">
+    <header>
+      <div class="title" id="siteTitle">Happy Birthday 💖</div>
+      <div><button class="btn" id="loginToggle">Login</button></div>
+    </header>
 
-  <!-- LOGIN SCREEN -->
-  <div id="loginScreen" class="centered">
-    <h1>Welcome 💌</h1>
-    <input type="text" id="username" placeholder="Username" />
-    <input type="password" id="password" placeholder="Password" />
-    <button id="loginButton">Login</button>
-    <p class="hint">Use <b>admin/admin</b> or <b>receiver/receiver</b></p>
+    <div class="card">
+      <div class="top">
+        <img id="heartImage" class="heart" src="heart.jpg" alt="heart (click to edit)">
+        <div id="subtitle" class="subtitle" contenteditable="false">Every day with you is a new chapter in my favorite story.</div>
+      </div>
+
+      <div class="controls">
+        <button class="btn-primary" id="openDiary">Open Diary</button>
+        <button class="ghost" id="settingsBtn">Settings</button>
+        <div style="margin-left:auto" class="small">Logged in as <strong id="userLabel">none</strong></div>
+      </div>
+
+      <div id="app" class="hidden">
+        <div class="grid">
+          <div>
+            <div id="messagesContainer"></div>
+          </div>
+
+          <aside>
+            <div class="panel">
+              <div style="font-weight:700">Composer</div>
+              <input id="msgTitle" placeholder="Title (optional)">
+              <textarea id="msgContent" placeholder="Write your message or poem..." style="min-height:110px"></textarea>
+
+              <div style="display:flex;gap:8px;margin-top:8px">
+                <input id="msgDate" type="date">
+                <input id="msgTime" type="time">
+              </div>
+
+              <div style="display:flex;gap:8px;margin-top:8px">
+                <button class="btn-primary" id="addMessageBtn">Add Message</button>
+                <button class="ghost" id="clearComposer">Clear</button>
+              </div>
+
+              <hr>
+
+              <div style="font-weight:700">Background Audio</div>
+              <div style="margin-top:8px">
+                <select id="audioMode">
+                  <option value="default">Default (lofi)</option>
+                  <option value="none">None</option>
+                  <option value="upload">Upload audio</option>
+                  <option value="link">Use link</option>
+                </select>
+                <input id="audioUpload" type="file" accept="audio/*" class="hidden">
+                <input id="audioLink" class="hidden" placeholder="Paste direct audio URL (https://...)">
+                <div style="margin-top:8px">
+                  <button class="btn-primary" id="toggleAudioBtn">Pause</button>
+                  <audio id="bgPlayer" loop><source src="lofi.mp3" type="audio/mpeg"></audio>
+                </div>
+                <div class="muted-note">Audio icon only appears when audio is added.</div>
+              </div>
+
+              <hr>
+
+              <div style="font-weight:700">Reminders</div>
+              <div id="remindersList" class="activity"></div>
+
+              <hr>
+
+              <div style="font-weight:700">Activity Log</div>
+              <div id="activityLog" class="activity"></div>
+
+              <hr>
+
+              <div style="display:flex;gap:8px;flex-wrap:wrap">
+                <button class="ghost" id="exportJson">Export JSON</button>
+                <button class="ghost" id="importJson">Import JSON</button>
+                <button class="ghost" id="resetAll">Reset</button>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <!-- MAIN APP -->
-  <div id="mainApp" style="display:none;">
-    <h2>Happy Birthday 🎉</h2>
-    <img src="heart.jpg" alt="Heart" class="main-img" />
-    <p class="subtitle">Every day with you is a new chapter...</p>
+  <button class="fab" id="fab">⋮</button>
+  <div id="toastRoot"></div>
 
-    <div id="adminTools" style="display:none;">
-      <h3>Admin Tools</h3>
-      <p>You can add, edit, or remove messages.</p>
+  <!-- login modal -->
+  <div id="loginModal" class="hidden" style="position:fixed;inset:0;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:9999">
+    <div style="background:white;padding:14px;border-radius:12px;width:92%;max-width:420px">
+      <h3 class="center">Login</h3>
+      <input id="loginName" placeholder="Your name" style="width:100%;margin-top:6px">
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <select id="loginRole"><option value="receiver">Receiver</option><option value="admin">Admin</option></select>
+        <input id="loginPass" placeholder="Password" type="password">
+      </div>
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <button class="btn-primary" id="doLogin">Login</button>
+        <button class="ghost" id="closeLogin">Close</button>
+      </div>
+      <p class="small center">Default: admin/admin &nbsp; receiver/receiver</p>
     </div>
-
-    <div id="receiverTools" style="display:none;">
-      <h3>Receiver Tools</h3>
-      <p>You can read messages, add comments, and reminders.</p>
-    </div>
-
-    <!-- Background music -->
-    <audio id="backgroundAudio" src="lofi.mp3" loop></audio>
-    <button id="musicToggle" class="floating">🎵</button>
   </div>
 
-  <script src="script.js"></script>
+<script src="script.js"></script>
 </body>
 </html>

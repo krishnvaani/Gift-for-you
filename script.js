@@ -1,54 +1,34 @@
-body {
-  font-family: "Poppins", sans-serif;
-  background-color: #d9e9ff;
-  margin: 0;
-  padding: 0;
-  text-align: center;
-}
+document.addEventListener("DOMContentLoaded", () => {
+  const loginButton = document.getElementById("loginButton");
+  const musicButton = document.getElementById("musicToggle");
+  const audio = document.getElementById("backgroundAudio");
+  const loginScreen = document.getElementById("loginScreen");
+  const mainApp = document.getElementById("mainApp");
 
-.centered {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100vh;
-}
+  let isAdmin = false;
 
-input {
-  margin: 5px;
-  padding: 10px;
-  font-size: 16px;
-  border-radius: 8px;
-  border: 1px solid #aaa;
-}
+  loginButton.addEventListener("click", () => {
+    const username = document.getElementById("username").value.trim().toLowerCase();
+    const password = document.getElementById("password").value.trim().toLowerCase();
 
-button {
-  background-color: #7fa8ff;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 8px;
-  cursor: pointer;
-  margin-top: 10px;
-}
+    if ((username === "admin" && password === "admin") || (username === "receiver" && password === "receiver")) {
+      isAdmin = username === "admin";
+      loginScreen.style.display = "none";
+      mainApp.style.display = "block";
 
-button:hover {
-  background-color: #507bff;
-}
+      document.getElementById("adminTools").style.display = isAdmin ? "block" : "none";
+      document.getElementById("receiverTools").style.display = isAdmin ? "none" : "block";
 
-.main-img {
-  width: 180px;
-  height: auto;
-  border-radius: 50%;
-  margin-top: 20px;
-}
+      audio.volume = 0.5;
+      audio.play().catch(() => console.log("Autoplay blocked"));
+    } else {
+      alert("❌ Wrong credentials. Try again!");
+    }
+  });
 
-.floating {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  border-radius: 50%;
-  width: 60px;
-  height: 60px;
-  font-size: 24px;
-}
+  // Music toggle button
+  musicButton.addEventListener("click", () => {
+    if (audio.paused) audio.play();
+    else audio.pause();
+  });
+});

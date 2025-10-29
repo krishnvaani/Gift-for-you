@@ -1,60 +1,54 @@
-let isAdmin = false;
+body {
+  font-family: "Poppins", sans-serif;
+  background-color: #d9e9ff;
+  margin: 0;
+  padding: 0;
+  text-align: center;
+}
 
-document.addEventListener("DOMContentLoaded", () => {
-  const loginButton = document.getElementById("loginButton");
+.centered {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
 
-  if (loginButton) {
-    loginButton.addEventListener("click", function () {
-      const username = document.getElementById("username").value.trim().toLowerCase();
-      const password = document.getElementById("password").value.trim().toLowerCase();
+input {
+  margin: 5px;
+  padding: 10px;
+  font-size: 16px;
+  border-radius: 8px;
+  border: 1px solid #aaa;
+}
 
-      if (
-        (username === "admin" && password === "admin") ||
-        (username === "receiver" && password === "receiver")
-      ) {
-        // Hide login screen
-        const loginScreen = document.getElementById("loginScreen");
-        const mainApp = document.getElementById("mainApp");
+button {
+  background-color: #7fa8ff;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-top: 10px;
+}
 
-        if (loginScreen && mainApp) {
-          loginScreen.style.display = "none";
-          mainApp.style.display = "block";
-        }
+button:hover {
+  background-color: #507bff;
+}
 
-        // Track who logged in
-        isAdmin = username === "admin";
+.main-img {
+  width: 180px;
+  height: auto;
+  border-radius: 50%;
+  margin-top: 20px;
+}
 
-        initializeApp(isAdmin); // Initialize page content
-      } else {
-        alert("Incorrect username or password. Please try again!");
-      }
-    });
-  }
-});
-
-// Called once user successfully logs in
-function initializeApp(isAdminUser) {
-  console.log("App initialized as:", isAdminUser ? "Admin" : "Receiver");
-
-  // Example: show admin tools if admin
-  const adminTools = document.getElementById("adminTools");
-  if (adminTools) {
-    adminTools.style.display = isAdminUser ? "block" : "none";
-  }
-
-  // Example: show receiver tools if receiver
-  const receiverTools = document.getElementById("receiverTools");
-  if (receiverTools) {
-    receiverTools.style.display = isAdminUser ? "none" : "block";
-  }
-
-  // Auto-play background lofi (if enabled)
-  const audio = document.getElementById("backgroundAudio");
-  if (audio) {
-    audio.loop = true;
-    audio.volume = 0.5;
-    audio.play().catch(() => {
-      console.log("Audio autoplay blocked; user must interact first.");
-    });
-  }
+.floating {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  font-size: 24px;
 }

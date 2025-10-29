@@ -1,6 +1,6 @@
 body {
-  font-family: "Poppins", sans-serif;
-  background-color: #d9e9ff;
+  font-family: 'Poppins', sans-serif;
+  background-color: #cfe7ff;
   margin: 0;
   padding: 0;
   text-align: center;
@@ -15,7 +15,7 @@ body {
 }
 
 input {
-  margin: 5px;
+  margin: 8px;
   padding: 10px;
   font-size: 16px;
   border-radius: 8px;

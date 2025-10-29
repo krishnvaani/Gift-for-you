@@ -1,1 +1,13 @@
-<!doctype html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>Happy Birthday</title><link rel='stylesheet' href='style.css'></head><body><h1>Happy Birthday</h1><script src='script.js'></script></body></html>
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Happy Birthday</title><link rel="stylesheet" href="style.css"></head><body>
+<div class="wrap"><header><div class="title" id="siteTitle">Happy Birthday ❤️</div><div><button id="loginToggle">Login</button></div></header>
+<div class="card"><div class="top"><img id="heartImage" src="heart.jpg" style="width:150px;height:150px"><div id="subtitle">Every day with you is a new chapter in my favorite story.</div></div>
+<div class="controls"><div class="small">Logged in as <strong id="userLabel">none</strong></div></div>
+<div id="app" class="hidden"><div id="messagesContainer"></div></div></div></div>
+<div id="loginModal" class="hidden" style="position:fixed;inset:0;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center">
+  <div style="background:white;padding:14px;border-radius:12px;width:90%;max-width:420px">
+    <h3>Login</h3><input id="loginName" placeholder="Your name"><div><select id="loginRole"><option value="receiver">Receiver</option><option value="admin">Admin</option></select><input id="loginPass" placeholder="Password" type="password"></div>
+    <div><button id="doLogin">Login</button><button id="closeLogin">Close</button></div>
+  </div>
+</div>
+<script src="script.js"></script></body></html>

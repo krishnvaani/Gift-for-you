@@ -3,57 +3,38 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Happy Birthday 💖</title>
+<title>Gift for You 💖</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-<div id="loginModal" class="visible-opacity">
+<div id="loginModal" class="overlay visible">
   <div class="login-box">
-    <h2>Welcome 💝</h2>
+    <h2>Welcome</h2>
     <input id="nameInput" placeholder="Name">
-    <input id="passInput" type="password" placeholder="Password">
+    <input id="passInput" placeholder="Password" type="password">
+    <p id="loginError"></p>
     <button id="loginBtn">Enter</button>
-    <div id="loginError" class="error"></div>
   </div>
 </div>
 
-<div id="app" class="hidden-opacity">
-<header>
-  <h1 contenteditable="true">Happy Birthday 💖</h1>
-  <button id="logoutBtn">Logout</button>
-</header>
-
-<div class="card">
-  <img id="heartImage" class="heart" src="heart.jpg" alt="heart">
-  <textarea id="subtitle" class="subtitle" placeholder="Write something beautiful..."></textarea>
-
-  <audio id="bgAudio" loop></audio>
-  <button id="musicBtn">⏸️/▶️ Music</button>
-  <input type="file" id="audioUpload" accept="audio/*">
-</div>
-
-<div class="card">
-  <h3>Diary 📝</h3>
-  <textarea id="diaryInput" placeholder="Write a diary entry..."></textarea>
-  <button id="saveDiary">Save</button>
-  <div id="diaryList"></div>
-</div>
-
-<div class="card">
-  <h3>Aap kuch kehna chahenge? 💬</h3>
-  <textarea id="commentInput" placeholder="Write comment..."></textarea>
-  <button id="addComment">Add</button>
-  <div id="commentList"></div>
-</div>
-
-<div class="card">
-  <h3>Reminder ⏰</h3>
-  <input id="reminderInput" placeholder="Type reminder...">
-  <button id="addReminder">Add</button>
-  <div id="reminderList"></div>
-</div>
-
+<div id="app" class="hidden">
+  <header>
+    <div id="title" contenteditable="true">Happy Birthday 💖</div>
+    <button id="logoutBtn">Logout</button>
+  </header>
+  <div class="card">
+    <img id="heartImg" src="heart.jpg" class="heart">
+    <div id="subtitle" contenteditable="true">Every day with you is a new chapter…</div>
+    <button id="musicBtn">🎵</button>
+    <audio id="bgAudio" loop></audio>
+  </div>
+  <div id="messages"></div>
+  <div id="fab">+</div>
+  <div id="menu" class="menu hidden">
+    <button id="addMsg">Add Message</button>
+    <button id="addRem">Add Reminder</button>
+    <button id="addHelp">Info</button>
+  </div>
 </div>
 
 <script src="script.js"></script>

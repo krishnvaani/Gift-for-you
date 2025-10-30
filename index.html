@@ -7,26 +7,26 @@
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- Login Modal -->
-  <div id="loginModal" class="modal visible">
+  <!-- LOGIN MODAL (centered, scroll locked while visible) -->
+  <div id="loginModal" class="modal">
     <div class="modal-box">
       <h2>Welcome 💝</h2>
       <input id="loginName" placeholder="Username" autocomplete="off">
       <input id="loginPass" placeholder="Password" type="password" autocomplete="off">
-      <div style="display:flex;gap:8px;margin-top:8px;">
-        <button id="doLogin" class="btn primary">Login</button>
+      <div style="display:flex;gap:8px;margin-top:10px;">
+        <button id="doLogin" class="btn">Login</button>
         <button id="closeLogin" class="btn ghost">Cancel</button>
       </div>
-      <div id="loginHint" class="muted-note">Default — admin / admin • receiver / receiver</div>
       <div id="loginError" class="err"></div>
+      <div class="muted-note" style="margin-top:8px">Default logins — Admin: <strong>admin / admin123</strong> • Receiver: <strong>receiver / receiver123</strong></div>
     </div>
   </div>
 
-  <!-- App -->
+  <!-- APP -->
   <div id="app" class="hidden">
     <header class="header">
       <div class="left">
-        <img id="heartImage" src="heart-placeholder.png" class="heart" alt="heart (click to change)">
+        <img id="heartImage" src="" class="heart" alt="heart (click to change)">
         <div class="titles">
           <h1 id="siteTitle" contenteditable="true">Happy Birthday 💖</h1>
           <div id="subtitle" contenteditable="true" class="subtitle">Every day with you is a new chapter in my favorite story.</div>
@@ -35,7 +35,7 @@
       <div class="right">
         <div id="userLabel" class="muted-note">Not logged in</div>
         <button id="toggleAudioBtn" class="btn ghost hidden">Play</button>
-        <button id="logoutBtn" class="btn ghost hidden">Logout</button>
+        <button id="logoutBtn" class="btn ghost">Logout</button>
       </div>
     </header>
 
@@ -89,7 +89,7 @@
         <div class="muted-note">
           <ul>
             <li><strong>Play button</strong> - toggles background music (autoplays after first tap)</li>
-            <li><strong>+ (FAB)</strong> - quick actions: Add Message (admin), Add Comment (receiver), Add Reminder</li>
+            <li><strong>FAB (+)</strong> - quick actions: Add Message (admin), Add Comment (receiver), Add Reminder</li>
             <li><strong>Comments</strong> - receiver can add/edit comments; admin can view previous versions</li>
             <li><strong>Reminders</strong> - both admin & receiver can set reminders with date/time</li>
             <li><strong>Export/Import</strong> - backup or restore site data (JSON)</li>

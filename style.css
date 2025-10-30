@@ -9,10 +9,10 @@
 }
 *{box-sizing:border-box}
 html,body{height:100%;margin:0;font-family:Inter,Arial,sans-serif;background:linear-gradient(180deg,var(--pastel-sky),var(--pastel-lavender));color:var(--text)}
-.modal{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.45);z-index:9999}
+/* CENTERED LOGIN MODAL (covers page, locks scroll) */
+.modal{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.45);backdrop-filter:blur(6px);z-index:9999}
 .modal-box{background:var(--card);padding:20px;border-radius:12px;max-width:360px;width:92%;box-shadow:0 12px 40px rgba(0,0,0,0.12);text-align:center}
 .hidden{display:none}
-.visible{display:block}
 .header{display:flex;justify-content:space-between;align-items:center;padding:14px;background:linear-gradient(135deg,var(--primary),var(--accent));color:#fff}
 .left{display:flex;gap:12px;align-items:center}
 .heart{width:110px;height:110px;border-radius:18px;object-fit:cover;cursor:pointer;border:6px solid rgba(255,255,255,0.6)}
@@ -35,4 +35,6 @@ input,textarea,select{font-size:1rem;padding:8px;border-radius:10px;border:1px s
 .comment{background:#fbfbff;border:1px solid #eee;padding:8px;border-radius:8px;margin-top:8px}
 .history-entry{font-size:0.82rem;opacity:0.8;margin-top:6px;padding-left:8px;border-left:3px solid #f0f0f5}
 .err{color:#b00020;margin-top:8px}
+.hidden-opacity { opacity: 0; pointer-events: none; visibility: hidden; transition: opacity .25s; }
+.visible-opacity { opacity: 1; visibility: visible; pointer-events: auto; transition: opacity .25s; }
 @media(max-width:720px){.heart{width:76px;height:76px}.titles h1{font-size:1.05rem}}

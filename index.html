@@ -1,114 +1,60 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title id="pageTitle">Happy Birthday 💖</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Gift For You 💖</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- LOGIN MODAL (centered, scroll locked while visible) -->
-  <div id="loginModal" class="modal">
-    <div class="modal-box">
-      <h2>Welcome 💝</h2>
-      <input id="loginName" placeholder="Username" autocomplete="off">
-      <input id="loginPass" placeholder="Password" type="password" autocomplete="off">
-      <div style="display:flex;gap:8px;margin-top:10px;">
-        <button id="doLogin" class="btn">Login</button>
-        <button id="closeLogin" class="btn ghost">Cancel</button>
-      </div>
-      <div id="loginError" class="err"></div>
-      <div class="muted-note" style="margin-top:8px">Default logins — Admin: <strong>admin / admin123</strong> • Receiver: <strong>receiver / receiver123</strong></div>
-    </div>
+
+<div id="loginModal" class="modal visible">
+  <div class="loginBox">
+    <h2>Welcome 💕</h2>
+    <input id="loginUser" placeholder="Username">
+    <input id="loginPass" type="password" placeholder="Password">
+    <button id="loginBtn">Login</button>
+    <div id="loginErr"></div>
   </div>
+</div>
 
-  <!-- APP -->
-  <div id="app" class="hidden">
-    <header class="header">
-      <div class="left">
-        <img id="heartImage" src="" class="heart" alt="heart (click to change)">
-        <div class="titles">
-          <h1 id="siteTitle" contenteditable="true">Happy Birthday 💖</h1>
-          <div id="subtitle" contenteditable="true" class="subtitle">Every day with you is a new chapter in my favorite story.</div>
-        </div>
-      </div>
-      <div class="right">
-        <div id="userLabel" class="muted-note">Not logged in</div>
-        <button id="toggleAudioBtn" class="btn ghost hidden">Play</button>
-        <button id="logoutBtn" class="btn ghost">Logout</button>
-      </div>
-    </header>
+<div id="app" class="hidden">
+<header>
+  <h2 id="title" contenteditable="true">Happy Birthday 💖</h2>
+  <button id="logoutBtn">Logout</button>
+</header>
 
-    <main class="container">
-      <section class="controls">
-        <button id="openRead" class="btn ghost">Read</button>
-        <button id="openArchive" class="btn ghost">Archive</button>
-        <button id="openAdmin" class="btn ghost hidden">Admin</button>
-        <button id="openInfo" class="btn ghost">Info</button>
-      </section>
+<div class="top">
+  <img id="heartImg" alt="Tap to upload">
+  <p id="subtitle" contenteditable="true">Every moment with you is magical ✨</p>
+</div>
 
-      <section id="readView" class="panel">
-        <h2>Today's Message</h2>
-        <div id="todayContent" class="content-area"></div>
-      </section>
+<div class="controls">
+  <button id="addMsgBtn" class="adminOnly">Add Message</button>
+  <button id="infoBtn">ℹ️ Info</button>
+  <button id="changePassBtn">Change Password</button>
+  <button id="musicBtn">🎵</button>
+  <input type="file" id="audioInput" accept="audio/*" hidden>
+</div>
 
-      <section id="archiveView" class="panel hidden">
-        <h2>All Messages</h2>
-        <div id="archiveContent"></div>
-      </section>
+<div id="msgForm" class="card hidden adminOnly">
+  <input id="msgTitle" placeholder="Message title (optional)">
+  <textarea id="msgText" placeholder="Write message..."></textarea>
+  <button id="saveMsg">Save</button>
+</div>
 
-      <section id="adminView" class="panel hidden">
-        <h2>Admin Panel</h2>
-        <div class="form-row"><label>Type</label><select id="contentType"><option value="message">Message</option><option value="poem">Poem</option></select></div>
-        <div class="form-row"><label>Title</label><input id="contentTitle"></div>
-        <div class="form-row"><label>Content</label><textarea id="contentText"></textarea></div>
-        <div class="form-row"><label>Schedule Date</label><input id="scheduleDate" type="date"></div>
-        <div class="form-row"><label>Schedule Time</label><input id="scheduleTime" type="time" value="09:00"></div>
-        <div class="form-row"><label>Attach Audio (optional)</label><input id="attachAudio" type="file" accept="audio/*"></div>
-        <div style="display:flex;gap:8px;margin-top:8px;">
-          <button id="addContentBtn" class="btn primary">Upload Content</button>
-          <button id="exportJson" class="btn ghost">Export JSON</button>
-          <button id="importJson" class="btn ghost">Import JSON</button>
-        </div>
+<div id="messages"></div>
 
-        <h3 style="margin-top:18px;">Manage Content</h3>
-        <div id="contentList"></div>
+<div class="card">
+  <h3>Reminders</h3>
+  <input id="remText" placeholder="Reminder text">
+  <button id="addRem">Add</button>
+  <div id="remList"></div>
+</div>
 
-        <h3 style="margin-top:18px;">Activity Log</h3>
-        <div id="activityLog" class="activity"></div>
+</div>
 
-        <h3 style="margin-top:18px;">Account</h3>
-        <div class="form-row"><label>Change Password (Admin)</label><input id="changeAdminPass" type="password" placeholder="New admin password"></div>
-        <div style="display:flex;gap:8px">
-          <button id="saveAdminPass" class="btn">Save</button>
-        </div>
-      </section>
-
-      <section id="infoView" class="panel hidden">
-        <h2>Info</h2>
-        <div class="muted-note">
-          <ul>
-            <li><strong>Play button</strong> - toggles background music (autoplays after first tap)</li>
-            <li><strong>FAB (+)</strong> - quick actions: Add Message (admin), Add Comment (receiver), Add Reminder</li>
-            <li><strong>Comments</strong> - receiver can add/edit comments; admin can view previous versions</li>
-            <li><strong>Reminders</strong> - both admin & receiver can set reminders with date/time</li>
-            <li><strong>Export/Import</strong> - backup or restore site data (JSON)</li>
-            <li><strong>Password change</strong> - admin can change admin password; receiver can change their password in quick actions</li>
-          </ul>
-        </div>
-      </section>
-    </main>
-
-    <button id="fab" class="fab">+</button>
-    <div id="fabMenu" class="fab-menu hidden">
-      <button id="fabAddMsg" class="btn ghost">Add Message</button>
-      <button id="fabAddComment" class="btn ghost">Add Comment</button>
-      <button id="fabAddRem" class="btn ghost">Set Reminder</button>
-    </div>
-
-    <audio id="bgPlayer" loop></audio>
-  </div>
-
+<audio id="bgAudio" loop></audio>
 <script src="script.js"></script>
 </body>
 </html>

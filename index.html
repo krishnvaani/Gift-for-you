@@ -10,18 +10,12 @@
 <div id="loginModal" class="modal visible-opacity">
   <div class="modal-box">
     <h2>Login</h2>
-    <div class="form-row">
-      <input id="loginName" placeholder="Your name" autocomplete="off">
-    </div>
-    <div class="form-row">
-      <select id="loginRole">
-        <option value="receiver">Receiver</option>
-        <option value="admin">Admin</option>
-      </select>
-    </div>
-    <div class="form-row">
-      <input id="loginPass" type="password" placeholder="Password">
-    </div>
+    <input id="loginName" placeholder="Your name" autocomplete="off">
+    <select id="loginRole">
+      <option value="receiver">Receiver</option>
+      <option value="admin">Admin</option>
+    </select>
+    <input id="loginPass" type="password" placeholder="Password">
     <div class="row">
       <button id="doLogin" class="btn primary">Login</button>
       <button id="closeLogin" class="btn ghost">Close</button>
@@ -40,7 +34,7 @@
     </div>
     <div class="right">
       <div id="userLabel" class="muted-note">Not logged in</div>
-      <button id="toggleAudioBtn" class="btn ghost hidden">Play Music</button>
+      <button id="toggleAudioBtn" class="btn ghost hidden">Play</button>
       <button id="logoutBtn" class="btn ghost hidden">Logout</button>
     </div>
   </header>
@@ -80,16 +74,15 @@
         <button id="importJson" class="btn ghost">Import JSON</button>
       </div>
       
+      <!-- NEW FEATURES ADDED HERE -->
       <h3>Change Passwords</h3>
       <div class="form-row">
-        <label>Admin Password</label>
         <input type="password" id="adminPassword" placeholder="New admin password">
-        <button id="changeAdminPass" class="btn ghost">Change</button>
+        <button id="changeAdminPass" class="btn ghost">Change Admin Pass</button>
       </div>
       <div class="form-row">
-        <label>Receiver Password</label>
         <input type="password" id="receiverPassword" placeholder="New receiver password">
-        <button id="changeReceiverPass" class="btn ghost">Change</button>
+        <button id="changeReceiverPass" class="btn ghost">Change Receiver Pass</button>
       </div>
       
       <h3>Background Music</h3>
@@ -97,6 +90,7 @@
         <input type="file" id="changeBgMusic" accept="audio/*">
         <button id="resetBgMusic" class="btn ghost">Reset to Default</button>
       </div>
+      <!-- END NEW FEATURES -->
       
       <h3>Manage Content</h3>
       <div id="contentList"></div>
@@ -105,7 +99,7 @@
     </section>
   </main>
 
-  <button id="fab" class="fab">?</button>
+  <button id="fab" class="fab">+</button>
   <audio id="bgPlayer" loop></audio>
 </div>
 

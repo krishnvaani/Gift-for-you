@@ -73,10 +73,28 @@ const resetBgMusic = document.getElementById('resetBgMusic');
 
 function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(appData)); renderAll(); }
 
-function showLogin(){ loginModal.classList.remove('hidden-opacity'); loginModal.classList.add('visible-opacity'); }
-function hideLogin(){ loginModal.classList.remove('visible-opacity'); loginModal.classList.add('hidden-opacity'); setTimeout(()=> loginModal.classList.add('hidden'), 420); }
-function showApp(){ appEl.classList.remove('hidden-opacity'); appEl.classList.add('visible-opacity'); appEl.classList.remove('hidden'); }
-function hideApp(){ appEl.classList.remove('visible-opacity'); appEl.classList.add('hidden-opacity'); }
+function showLogin(){ 
+  loginModal.classList.remove('hidden-opacity'); 
+  loginModal.classList.add('visible-opacity');
+  loginModal.classList.remove('hidden');
+}
+
+function hideLogin(){ 
+  loginModal.classList.remove('visible-opacity'); 
+  loginModal.classList.add('hidden-opacity'); 
+  setTimeout(()=> loginModal.classList.add('hidden'), 420); 
+}
+
+function showApp(){ 
+  appEl.classList.remove('hidden-opacity'); 
+  appEl.classList.add('visible-opacity'); 
+  appEl.classList.remove('hidden'); 
+}
+
+function hideApp(){ 
+  appEl.classList.remove('visible-opacity'); 
+  appEl.classList.add('hidden-opacity'); 
+}
 
 // initialize UI
 document.addEventListener('DOMContentLoaded', ()=>{
@@ -99,7 +117,9 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
 function setupEvents(){
   doLoginBtn.addEventListener('click', doLogin);
-  closeLoginBtn.addEventListener('click', ()=>{ loginModal.classList.add('hidden'); });
+  closeLoginBtn.addEventListener('click', ()=>{ 
+    loginModal.classList.add('hidden'); 
+  });
   logoutBtn.addEventListener('click', ()=>{ location.reload(); });
   openAdminPanelBtn.addEventListener('click', ()=>{ showSection('admin'); });
   openArchiveBtn.addEventListener('click', ()=>{ showSection('archive'); });
@@ -121,37 +141,54 @@ function setupEvents(){
   resetBgMusic.addEventListener('click', resetBgMusicToDefault);
 }
 
-// login
+// login - FIXED VERSION
 function doLogin(){
   const name = loginName.value.trim();
   const role = loginRole.value;
   const pass = loginPass.value;
-  if(!name){ alert('Enter name'); return; }
-  if(role==='admin'){
-    if(pass !== appData.settings.credentials.adminPass){ alert('Wrong admin password'); return; }
-  } else {
-    if(appData.settings.credentials.receiverPass && pass !== appData.settings.credentials.receiverPass){ alert('Wrong receiver password'); return; }
+  
+  if(!name){ 
+    alert('Enter name'); 
+    return; 
   }
+  
+  if(role==='admin'){
+    if(pass !== appData.settings.credentials.adminPass){ 
+      alert('Wrong admin password'); 
+      return; 
+    }
+  } else {
+    if(pass !== appData.settings.credentials.receiverPass){ 
+      alert('Wrong receiver password'); 
+      return; 
+    }
+  }
+  
   currentUser = { name, role };
   userLabel.textContent = name + ' ('+role+')';
   appData.activity.push(name + ' logged in as '+role+' at '+new Date().toLocaleString());
   save();
+  
   // hide login and show app with fade
   hideLogin();
-  setTimeout(()=>{ showApp(); document.getElementById('loginModal').classList.add('hidden'); },420);
+  setTimeout(()=>{ 
+    showApp(); 
+  }, 420);
+  
   // role UI
   if(role==='admin'){ 
     openAdminPanelBtn.classList.remove('hidden'); 
-    document.getElementById('logoutBtn').classList.remove('hidden'); 
-    document.getElementById('openAdminPanel').classList.remove('hidden'); 
+    logoutBtn.classList.remove('hidden'); 
+    openAdminPanelBtn.classList.remove('hidden'); 
     toggleAudioBtn.classList.remove('hidden');
   } else { 
-    document.getElementById('logoutBtn').classList.remove('hidden'); 
+    logoutBtn.classList.remove('hidden'); 
     toggleAudioBtn.classList.remove('hidden');
   }
+  
   startObserver();
   // confetti + vibration
-  navigator.vibrate && navigator.vibrate(60);
+  if (navigator.vibrate) navigator.vibrate(60);
   showConfetti();
   
   // Update audio button text
@@ -666,7 +703,7 @@ function startObserver(){
           m.seenAt = new Date().toISOString(); 
           appData.activity.push('Message "'+(m.title||'')+'" seen by '+currentUser.name+' at '+new Date().toLocaleString()); 
           save(); 
-          navigator.vibrate && navigator.vibrate(40); 
+          if (navigator.vibrate) navigator.vibrate(40); 
         } 
       } 
     }); 

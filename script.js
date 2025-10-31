@@ -1,82 +1,396 @@
 
-const STORAGE='gift_v_final';
-const LAST='gift_last_user';
-let data = JSON.parse(localStorage.getItem(STORAGE)||'null')||{settings:{adminUser:'admin',adminPass:'admin',receiverUser:'receiver',receiverPass:'receiver',title:'Happy Birthday 💖',subtitle:'With love'},messages:[],nextId:1,activity:[],reminders:[]};
-let user=null;
-const $=(id)=>document.getElementById(id);
+// Replaced script.js - features injected, original UI preserved
+const STORAGE_KEY = 'gift_for_you_final_v2';
+const LAST_USER_KEY = STORAGE_KEY + '_lastUser';
+let appData = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null') || {
+  settings: {
+    title: 'Happy Birthday 💖',
+    subtitle: 'Every day with you is a new chapter.',
+    frontImage: 'heart.jpg',
+    credentials: { adminUser: 'admin', adminPass: 'admin', receiverUser: 'receiver', receiverPass: 'receiver' }
+  },
+  messages: [], nextId: 1, activity: [], reminders: []
+};
+let currentUser = null;
+let observer = null;
 
-function save(){ localStorage.setItem(STORAGE,JSON.stringify(data)); render(); }
-function log(s){ data.activity.push(s); save(); }
-function checkCred(u,role,p){ if(role==='admin') return u===data.settings.adminUser && p===data.settings.adminPass; return u===data.settings.receiverUser && p===data.settings.receiverPass; }
+const $ = id => document.getElementById(id);
 
-document.addEventListener('DOMContentLoaded', ()=>{
-  // prefill saved username (Option B)
-  try{ const last=localStorage.getItem(LAST); if(last) $('loginName').value = last; }catch(e){}
-  $('doLogin').onclick = ()=>{
-    const u=$('loginName').value.trim(), r=$('loginRole').value, p=$('loginPass').value;
-    if(!u){ alert('Enter username'); return; }
-    if(!checkCred(u,r,p)){ alert('Wrong creds'); return; }
-    user={name:u,role:r}; localStorage.setItem(LAST,u); log(u+' logged in '+r+' @ '+new Date().toLocaleString());
-    $('loginModal').classList.add('hidden'); $('app').classList.remove('hidden');
-    startObserver(); render();
-    if(Notification && Notification.permission!=='granted') Notification.requestPermission();
-  };
-  $('logoutBtn').onclick = ()=> location.reload();
-  $('openRead').onclick = ()=>{ $('readView').classList.remove('hidden'); $('archiveView').classList.add('hidden'); $('adminPanel').classList.add('hidden'); };
-  $('openArchive').onclick = ()=>{ $('archiveView').classList.remove('hidden'); $('readView').classList.add('hidden'); $('adminPanel').classList.add('hidden'); };
-  $('openAdmin').onclick = ()=>{ $('adminPanel').classList.remove('hidden'); $('readView').classList.add('hidden'); $('archiveView').classList.add('hidden'); };
-  $('uploadMsg').onclick = ()=>{ if(!user||user.role!=='admin'){alert('Only admin');return;} const t=$('msgTitle').value||'Untitled', c=$('msgText').value||'', d=$('msgDate').value||null, tm=$('msgTime').value||'09:00'; const msg={id:data.nextId++,title:t,content:c,dateAdded:new Date().toISOString(),scheduled:d,scheduledTime:tm,released: d?false:true,postedOn: d?null:new Date().toISOString(),comments:[],seenAt:null}; data.messages.push(msg); log('Added '+t); save(); alert('Uploaded'); };
-  $('saveCreds').onclick = ()=>{ if(!user||user.role!=='admin'){alert('Only admin');return;} const au=$('adminUser').value.trim(), ap=$('adminPass').value, ru=$('receiverUser').value.trim(), rp=$('receiverPass').value; if(au) data.settings.adminUser=au; if(ap) data.settings.adminPass=ap; if(ru) data.settings.receiverUser=ru; if(rp) data.settings.receiverPass=rp; log('Creds updated'); save(); alert('Saved'); };
-  $('fab').onclick = ()=> $('helpModal').classList.toggle('hidden');
-  $('musicBtn').onclick = ()=>{ let p=$('bgPlayer'); if(!p.src||p.src.indexOf('lofi.mp3')==-1) p.src='lofi.mp3'; if(p.paused) p.play().catch(()=>{}); else p.pause(); };
-  $('exportBtn').onclick = ()=>{ const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'})); a.download='gift_backup.json'; a.click(); };
-  $('importBtn').onclick = ()=>{ const i=document.createElement('input'); i.type='file'; i.onchange=e=>{ const r=new FileReader(); r.onload=ev=>{ try{ data=JSON.parse(ev.target.result); save(); alert('Imported'); }catch(err){ alert('Invalid'); } }; r.readAsText(e.target.files[0]); }; i.click(); };
-  $('resetBtn').onclick = ()=>{ if(confirm('Reset?')){ localStorage.removeItem(STORAGE); location.reload(); } };
+// utility
+function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(appData)); renderAll(); }
+function logActivity(text){ appData.activity = appData.activity || []; appData.activity.push(text); localStorage.setItem(STORAGE_KEY, JSON.stringify(appData)); }
+function escapeHTML(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// initial wiring
+document.addEventListener('DOMContentLoaded', ()=> {
+  // header texts
+  $('pageTitle') && ($('pageTitle').textContent = appData.settings.title);
+  $('siteTitle') && ($('siteTitle').textContent = appData.settings.title);
+  $('subtitle') && ($('subtitle').textContent = appData.settings.subtitle);
+  $('heartImage') && ($('heartImage').src = appData.settings.frontImage || 'heart.jpg');
+
+  // remember username (Option B)
+  try{
+    const last = localStorage.getItem(LAST_USER_KEY);
+    if(last) $('loginName').value = last;
+  }catch(e){}
+
+  // clear password field
+  if($('loginPass')) $('loginPass').value = '';
+
+  setupEvents();
+  renderAll();
+  // show login modal
+  if($('loginModal')) {
+    $('loginModal').classList.remove('hidden-opacity');
+    $('loginModal').classList.add('visible-opacity');
+  }
   // periodic checks
-  setInterval(checkScheduled,20000);
-  setInterval(checkReminders,15000);
-  // set header text
-  $('siteTitle').textContent = data.settings.title; $('subtitle').textContent = data.settings.subtitle;
-  // try autoplay
-  try{ $('bgPlayer').src='lofi.mp3'; $('bgPlayer').play().catch(()=>{}); }catch(e){};
-  render();
+  setInterval(scheduledReleaseCheck, 30000);
+  setInterval(reminderRunner, 15000);
 });
 
-function render(){ // today's and archive
-  const today=new Date().toISOString().split('T')[0];
-  const todayMsg = data.messages.find(m=>m.scheduled===today && m.released) || data.messages.filter(m=>m.released).slice(-1)[0];
-  $('readView').innerHTML = todayMsg? renderMsgCard(todayMsg) : '<div class="msg">No message today</div>';
-  $('archiveView').innerHTML = data.messages.slice().reverse().map(m=>'<div class="msg" data-id="'+m.id+'">'+renderMsgHTML(m)+renderControls(m)+renderComments(m)+'</div>').join('');
-  if($('adminPanel')){ $('adminUser').value = data.settings.adminUser; $('receiverUser').value = data.settings.receiverUser; $('msgList').innerHTML = data.messages.map(m=>m.title).join('<br>'); }
-  if($('activity')) $('activity').innerHTML = data.activity.slice().reverse().join('<br>');
-  startObserver();
+// setup event listeners
+function setupEvents(){
+  $('doLogin').addEventListener('click', doLogin);
+  $('closeLogin') && $('closeLogin').addEventListener('click', ()=>{ $('loginModal').classList.add('hidden'); });
+  $('logoutBtn').addEventListener('click', ()=>{ location.reload(); });
+  $('openAdminPanel') && $('openAdminPanel').addEventListener('click', ()=> showSection('admin'));
+  $('openArchive') && $('openArchive').addEventListener('click', ()=> showSection('archive'));
+  $('openRead') && $('openRead').addEventListener('click', ()=> showSection('read'));
+  $('uploadMsg') && $('uploadMsg').addEventListener('click', addContent);
+  $('saveCreds') && $('saveCreds').addEventListener('click', saveCredentials);
+  $('toggleAudioBtn') && $('toggleAudioBtn').addEventListener('click', toggleMusic);
+  $('fab') && $('fab').addEventListener('click', ()=> $('helpModal').classList.toggle('hidden'));
+  $('closeHelp') && $('closeHelp').addEventListener('click', ()=> $('helpModal').classList.add('hidden'));
+
+  // delegated dynamic actions
+  document.body.addEventListener('click', function(e){
+    const btn = e.target;
+    if(btn.matches('[data-addcomment]')){ addCommentUI(Number(btn.dataset.addcomment)); }
+    if(btn.matches('[data-editcomment]')){ editCommentHandler(btn); }
+    if(btn.matches('[data-editmsg]')){ editContent(Number(btn.dataset.editmsg)); }
+    if(btn.matches('[data-delete]')){ deleteContent(Number(btn.dataset.delete)); }
+    if(btn.matches('[data-setrem]')){ setReminderForUser(Number(btn.dataset.setrem)); }
+    if(btn.matches('[data-reminder]')){ addReminderAdmin(Number(btn.dataset.reminder)); }
+  });
 }
 
-function renderMsgCard(m){ return renderMsgHTML(m)+renderControls(m)+renderComments(m); }
-function renderMsgHTML(m){ return '<b>'+escape(m.title)+'</b><div>'+escape(m.content)+'</div>' + (m.audio? '<audio controls src="'+m.audio+'"></audio>':''); }
-function renderControls(m){ let html = '<div> '; html += '<button data-addcomment="'+m.id+'">Comment</button>'; if(user && user.role==='admin'){ html += ' <button data-editmsg="'+m.id+'">Edit</button> <button data-reminder="'+m.id+'">Add Reminder</button>'; } if(user && user.role!=='admin'){ html += ' <button data-setrem="'+m.id+'">Set Reminder</button>'; } html += '</div>'; html += '<div class="small">'+ (m.seenAt? 'Seen at '+new Date(m.seenAt).toLocaleString() : 'Not seen yet') +'</div>'; return html; }
-function renderComments(m){ const cs=(m.comments||[]).map(c=>'<div class="comment"><small>'+escape(c.by)+' • '+new Date(c.when).toLocaleString()+'</small><div>'+escape(c.text)+'</div>' + ((user && user.name===c.by)? '<div><button data-editcomment="'+c.id+'" data-msg="'+m.id+'">Edit</button></div>':'') + ((user && user.role==='admin' && c.history && c.history.length)? '<div class="small">History:<br>'+ c.history.map(h=>'On '+new Date(h.when).toLocaleString()+' → '+escape(h.text)).join('<br>') +'</div>':'') + '</div>').join(''); return '<div>'+cs + (user? '<div><button data-addcomment="'+m.id+'">Add Comment</button></div>':'') +'</div>'; }
-
-function escape(s){ return (s||'').toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-
-// Comment handlers (delegated)
-document.body.addEventListener('click', (e)=>{
-  const t=e.target;
-  if(t.dataset.addcomment){ const id=Number(t.dataset.addcomment); if(!user){ alert('Login'); return;} const txt=prompt('Comment'); if(!txt) return; const m=data.messages.find(x=>x.id===id); const c={id:Date.now(),by:user.name,when:new Date().toISOString(),text:txt,history:[]}; m.comments=m.comments||[]; m.comments.push(c); log(user.name+' commented'); save(); }
-  if(t.dataset.editcomment){ const id=Number(t.dataset.editcomment), msgId=Number(t.dataset.msg); const m=data.messages.find(x=>x.id===msgId); const c=m.comments.find(x=>x.id===id); if(!c) return; if(!user||user.name!==c.by){ alert('Only author'); return;} const nt=prompt('Edit comment', c.text); if(nt===null) return; c.history=c.history||[]; c.history.push({when:new Date().toISOString(),text:c.text}); c.text=nt; log(c.by+' edited comment'); save(); }
-  if(t.dataset.editmsg){ const id=Number(t.dataset.editmsg); const m=data.messages.find(x=>x.id===id); const nt=prompt('Edit message', m.content); if(nt!==null){ m.content=nt; log('Edited msg'); save(); } }
-  if(t.dataset.reminder){ const id=Number(t.dataset.reminder); if(!user||user.role!=='admin'){alert('Only admin');return;} const when=prompt('YYYY-MM-DD HH:MM'); if(!when) return; const iso=new Date(when.replace(' ','T')).toISOString(); data.reminders.push({id:'r'+Math.random().toString(36).slice(2),title:(data.messages.find(m=>m.id===id)||{}).title||'Reminder',when:iso,messageId:id,by:user.name,fired:false}); log('Reminder set'); save(); }
-  if(t.dataset.setrem){ const id=Number(t.dataset.setrem); if(!user){alert('Login');return;} const when=prompt('YYYY-MM-DD HH:MM'); if(!when) return; const iso=new Date(when.replace(' ','T')).toISOString(); data.reminders.push({id:'r'+Math.random().toString(36).slice(2),title:(data.messages.find(m=>m.id===id)||{}).title||'Reminder',when:iso,messageId:id,by:user.name,fired:false}); log('Reminder set'); save(); }
-});
-
-function checkScheduled(){ const now=new Date(); let changed=false; data.messages.forEach(m=>{ if(m.released) return; if(!m.scheduled) return; const when=new Date(m.scheduled+'T'+(m.scheduledTime||'09:00')); if(when<=now){ m.released=true; m.postedOn=new Date().toISOString(); changed=true; log('Released '+m.title); } }); if(changed) save(); }
-
-function checkReminders(){ const now=new Date(); data.reminders.forEach(r=>{ if(!r.fired && new Date(r.when)<=now){ r.fired=true; log('[Reminder] '+r.title+' due '+r.when); if(Notification && Notification.permission==='granted'){ try{ new Notification('Reminder: '+r.title,{body:r.when}); }catch(e){} } save(); } }); }
-
-// Seen tracking via simple loop + visibility
-function startObserver(){ // simple fallback: mark visible messages seen when receiver is logged in
-  if(!user || user.role!=='receiver') return;
-  document.querySelectorAll('.msg').forEach(el=>{ const rect=el.getBoundingClientRect(); if(rect.top>=0 && rect.bottom<=window.innerHeight){ const id=Number(el.dataset.id); const m=data.messages.find(x=>x.id===id); if(m && !m.seenAt){ m.seenAt=new Date().toISOString(); log('Seen '+m.title); save(); } } });
+// Credentials check
+function checkCredentials(name, role, pass){
+  if(role === 'admin'){
+    return name === appData.settings.credentials.adminUser && pass === appData.settings.credentials.adminPass;
+  } else {
+    return name === appData.settings.credentials.receiverUser && pass === appData.settings.credentials.receiverPass;
+  }
 }
 
-// initial render on load already called
+function doLogin(){
+  const name = $('loginName').value.trim();
+  const role = $('loginRole').value;
+  const pass = $('loginPass').value;
+  if(!name){ alert('Enter name'); return; }
+  if(!checkCredentials(name, role, pass)){ alert('Invalid credentials'); return; }
+  currentUser = { name, role };
+  // remember username only
+  try{ localStorage.setItem(LAST_USER_KEY, name); }catch(e){}
+  logActivity(`${name} logged in as ${role} at ${new Date().toLocaleString()}`);
+  save();
+  // hide login and show app UI
+  $('loginModal').classList.add('hidden');
+  $('app') && $('app').classList.remove('hidden');
+  // clear password input after login
+  if($('loginPass')) $('loginPass').value = '';
+  // role-specific UI
+  if(role === 'admin'){
+    $('openAdminPanel') && $('openAdminPanel').classList.remove('hidden');
+    $('logoutBtn') && $('logoutBtn').classList.remove('hidden');
+  } else {
+    $('logoutBtn') && $('logoutBtn').classList.remove('hidden');
+  }
+  // initialize observer for seen tracking
+  setTimeout(()=> startObserver(), 400);
+  // try autoplay music
+  try{ const p = $('bgPlayer'); if(p){ if(!p.src || p.src.indexOf('lofi.mp3')===-1) p.src='lofi.mp3'; p.play().catch(()=>{}); } }catch(e){}
+}
+
+// save credentials (admin)
+function saveCredentials(){
+  if(!currentUser || currentUser.role !== 'admin'){ alert('Only admin can change credentials'); return; }
+  const aUser = $('adminUser').value.trim();
+  const aPass = $('adminPass').value;
+  const rUser = $('receiverUser').value.trim();
+  const rPass = $('receiverPass').value;
+  if(aUser) appData.settings.credentials.adminUser = aUser;
+  if(aPass) appData.settings.credentials.adminPass = aPass;
+  if(rUser) appData.settings.credentials.receiverUser = rUser;
+  if(rPass) appData.settings.credentials.receiverPass = rPass;
+  logActivity('Admin updated credentials at ' + new Date().toLocaleString());
+  save();
+  alert('Credentials saved. Password fields cleared for security.');
+  // clear UI password inputs
+  if($('adminPass')) $('adminPass').value = '';
+  if($('receiverPass')) $('receiverPass').value = '';
+}
+
+// Content functions
+function addContent(){
+  if(!currentUser || currentUser.role !== 'admin'){ alert('Only admin can add content'); return; }
+  const title = $('contentTitle')? $('contentTitle').value.trim() : ($('msgTitle')? $('msgTitle').value.trim() : '');
+  const content = $('contentText')? $('contentText').value.trim() : ($('msgText')? $('msgText').value.trim() : '');
+  const date = $('scheduleDate')? $('scheduleDate').value : ($('msgDate')? $('msgDate').value : '');
+  const time = $('scheduleTime')? $('scheduleTime').value : ($('msgTime')? $('msgTime').value : '09:00');
+  if(!content){ alert('Write content'); return; }
+  const msg = { id: appData.nextId++, type: $('contentType')? $('contentType').value : 'message', title: title||'Untitled', content, dateAdded: new Date().toISOString(), scheduled: date||null, scheduledTime: time||'09:00', released: date? false : true, postedOn: date? null : new Date().toISOString(), comments: [], audio: null, seenAt: null, preEdits: [] };
+  appData.messages.push(msg);
+  logActivity('Admin added "'+(title||'untitled')+'" at '+new Date().toLocaleString());
+  save();
+  alert('Content uploaded!');
+  // clear form if present
+  if($('contentTitle')) $('contentTitle').value = '';
+  if($('contentText')) $('contentText').value = '';
+  if($('scheduleDate')) $('scheduleDate').value = '';
+  if($('scheduleTime')) $('scheduleTime').value = '09:00';
+}
+
+// Edit/delete content
+function editContent(id){
+  if(!currentUser || currentUser.role !== 'admin'){ alert('Only admin'); return; }
+  const m = appData.messages.find(x=>x.id===id);
+  if(!m) return;
+  const nc = prompt('Edit message content', m.content);
+  if(nc !== null){
+    m.preEdits = m.preEdits || [];
+    m.preEdits.push({ when: new Date().toISOString(), text: m.content });
+    m.content = nc;
+    logActivity('Admin edited "'+(m.title||'')+'" at '+new Date().toLocaleString());
+    save();
+  }
+}
+function deleteContent(id){
+  if(!currentUser || currentUser.role !== 'admin'){ alert('Only admin'); return; }
+  if(!confirm('Delete this message?')) return;
+  appData.messages = appData.messages.filter(x=> x.id !== id);
+  logActivity('Admin deleted a message at '+new Date().toLocaleString());
+  save();
+}
+
+// Comments: add and edit (receiver editable), admin sees history
+function addCommentUI(id){
+  if(!currentUser){ alert('Login to comment'); return; }
+  const txt = prompt('Write comment');
+  if(!txt) return;
+  const m = appData.messages.find(x=>x.id===id);
+  if(!m) return;
+  const c = { id: Date.now(), by: currentUser.name, when: new Date().toISOString(), text: txt, history: [] };
+  m.comments = m.comments || [];
+  m.comments.push(c);
+  logActivity(currentUser.name + ' commented at ' + new Date().toLocaleString());
+  save();
+}
+function editCommentHandler(btn){
+  const msgId = Number(btn.dataset.msg);
+  const commentId = Number(btn.dataset.editcomment);
+  const m = appData.messages.find(x=>x.id===msgId);
+  if(!m) return;
+  const c = m.comments.find(x=>x.id===commentId);
+  if(!c) return;
+  if(!currentUser || currentUser.name !== c.by){ alert('Only the comment author can edit this'); return; }
+  const nt = prompt('Edit your comment', c.text);
+  if(nt === null) return;
+  c.history = c.history || [];
+  c.history.push({ when: new Date().toISOString(), text: c.text });
+  c.text = nt;
+  c.editedAt = new Date().toISOString();
+  logActivity(c.by + ' edited a comment at ' + new Date().toLocaleString());
+  save();
+}
+
+// Reminders
+function scheduleReminderObj(rem){
+  appData.reminders = appData.reminders || [];
+  appData.reminders.push(rem);
+  logActivity('Reminder set for ' + rem.when + ' by ' + rem.by);
+  save();
+}
+function addReminderAdmin(id){
+  if(!currentUser || currentUser.role !== 'admin'){ alert('Only admin'); return; }
+  const when = prompt('Reminder date-time (YYYY-MM-DD HH:MM)');
+  if(!when) return;
+  const title = prompt('Reminder title', (appData.messages.find(m=>m.id===id)||{}).title || 'Reminder');
+  try{
+    const iso = new Date(when.replace(' ','T')).toISOString();
+    scheduleReminderObj({ id: 'rem-'+Math.random().toString(36).slice(2), title, when: iso, messageId: id, by: currentUser.name, fired: false });
+    alert('Reminder scheduled at ' + iso);
+  }catch(e){ alert('Invalid date format'); }
+}
+function setReminderForUser(id){
+  if(!currentUser){ alert('Login to set reminder'); return; }
+  const when = prompt('Reminder date-time (YYYY-MM-DD HH:MM)');
+  if(!when) return;
+  const title = prompt('Reminder title', (appData.messages.find(m=>m.id===id)||{}).title || 'Reminder');
+  try{
+    const iso = new Date(when.replace(' ','T')).toISOString();
+    scheduleReminderObj({ id: 'rem-'+Math.random().toString(36).slice(2), title, when: iso, messageId: id, by: currentUser.name, fired: false });
+    alert('Reminder scheduled at ' + iso);
+  }catch(e){ alert('Invalid date format'); }
+}
+function reminderRunner(){
+  const now = new Date();
+  (appData.reminders||[]).forEach(r=>{
+    if(!r.fired && new Date(r.when) <= now){
+      r.fired = true;
+      logActivity('[Reminder] ' + r.title + ' — due ' + r.when);
+      // browser notification if permission granted
+      if('Notification' in window && Notification.permission === 'granted'){
+        try{ new Notification('Reminder: ' + r.title, { body: r.when }); }catch(e){}
+      } else {
+        // basic alert fallback
+        alert('Reminder: ' + r.title + ' — ' + r.when);
+      }
+      save();
+    }
+  });
+}
+
+// Scheduled release check
+function scheduledReleaseCheck(){
+  const now = new Date();
+  let changed = false;
+  appData.messages.forEach(m=>{
+    if(m.released) return;
+    if(!m.scheduled) return;
+    const when = new Date(m.scheduled + 'T' + (m.scheduledTime || '09:00'));
+    if(when <= now){
+      m.released = true;
+      m.postedOn = new Date().toISOString();
+      logActivity('Message "'+(m.title||'')+'" released at '+new Date().toLocaleString());
+      changed = true;
+    }
+  });
+  if(changed) save();
+}
+
+// Seen tracking using IntersectionObserver
+function startObserver(){
+  if(observer) observer.disconnect();
+  observer = new IntersectionObserver(entries=>{
+    entries.forEach(ent=>{
+      if(ent.isIntersecting){
+        const id = Number(ent.target.dataset.id);
+        const m = appData.messages.find(x=>x.id===id);
+        if(m && !m.seenAt && currentUser && currentUser.role === 'receiver'){
+          m.seenAt = new Date().toISOString();
+          logActivity('Message "'+(m.title||'')+'" seen by '+currentUser.name+' at '+new Date().toLocaleString());
+          save();
+        }
+      }
+    });
+  }, { threshold: 0.6 });
+  document.querySelectorAll('.msg[data-id]').forEach(n=> observer.observe(n));
+}
+
+// Render functions - keep UI structure unchanged
+function renderAll(){
+  try{
+    $('siteTitle') && ($('siteTitle').textContent = appData.settings.title);
+    $('subtitle') && ($('subtitle').textContent = appData.settings.subtitle);
+    $('heartImage') && ($('heartImage').src = appData.settings.frontImage || 'heart.jpg');
+
+    // today content
+    const today = new Date().toISOString().split('T')[0];
+    let content = appData.messages.find(m=> m.scheduled === today && m.released) || appData.messages.filter(m=> m.released).slice(-1)[0];
+    if($('todayContent')) $('todayContent').innerHTML = content? renderMessageCard(content) : '<div class="muted-note">No content for today. Add some in the Admin Panel!</div>';
+
+    // archive
+    if($('archiveContent')) $('archiveContent').innerHTML = appData.messages.slice().reverse().map(m=> '<div class="msg" data-id="'+m.id+'">'+ renderMessageHTML(m) + renderControlsHTML(m) + renderCommentsHTML(m) +'</div>').join('') || '<div class="muted-note">No messages yet</div>';
+
+    // admin content list
+    if($('contentList')) $('contentList').innerHTML = appData.messages.slice().reverse().map(m=>'<div class="content-item"><div><strong>'+escapeHTML(m.title||'(No title)')+'</strong><div class="small">'+ (m.type||'') +' • '+ new Date(m.dateAdded).toLocaleDateString() +'</div></div><div style="display:flex;gap:6px"><button class="ghost" data-editmsg="'+m.id+'">Edit</button><button class="ghost" data-delete="'+m.id+'">Delete</button></div></div>').join('') || '<div class="muted-note">No content scheduled yet.</div>';
+
+    // activity
+    if($('activityLog')) $('activityLog').innerHTML = (appData.activity||[]).slice().reverse().map(a=>'<div class="small">'+escapeHTML(a)+'</div>').join('');
+
+    // fill admin creds inputs if present
+    if($('adminUser')) $('adminUser').value = appData.settings.credentials.adminUser || '';
+    if($('receiverUser')) $('receiverUser').value = appData.settings.credentials.receiverUser || '';
+
+    // show/hide admin panel button based on login
+    if(currentUser && currentUser.role === 'admin'){
+      $('openAdminPanel') && $('openAdminPanel').classList.remove('hidden');
+      $('logoutBtn') && $('logoutBtn').classList.remove('hidden');
+    } else {
+      $('openAdminPanel') && $('openAdminPanel').classList.add('hidden');
+    }
+
+    // start observer after render
+    setTimeout(()=> startObserver(), 250);
+  }catch(e){ console.error(e); }
+}
+
+function renderMessageHTML(m){
+  return '<div class="meta"><strong>'+escapeHTML(m.title||'(No title)')+'</strong> • '+ new Date(m.dateAdded).toLocaleString() +'</div><div style="white-space:pre-line">'+ escapeHTML(m.content) +'</div>' + (m.audio? '<div class="audio-section"><audio controls src="'+m.audio+'"></audio></div>':'');
+}
+function renderControlsHTML(m){
+  let html = '<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">';
+  html += '<button class="ghost" data-addcomment="'+m.id+'">Comments</button>';
+  if(currentUser && currentUser.role === 'admin'){
+    html += '<button class="ghost" data-editmsg="'+m.id+'">Edit</button>';
+    html += '<button class="ghost" data-reminder="'+m.id+'">Add Reminder</button>';
+  }
+  if(currentUser && currentUser.role !== 'admin'){
+    html += '<button class="ghost" data-setrem="'+m.id+'">Set Reminder</button>';
+  }
+  html += '</div>';
+  html += '<div class="small">'+ (m.seenAt ? 'Seen by receiver • ' + new Date(m.seenAt).toLocaleString() : 'Not seen yet') +'</div>';
+  return html;
+}
+function renderMessageCard(m){
+  return '<div class="msg" data-id="'+m.id+'">'+ renderMessageHTML(m) + renderControlsHTML(m) + renderCommentsHTML(m) +'</div>';
+}
+function renderCommentsHTML(m){
+  const comments = (m.comments||[]).map(c=>{
+    let s = '<div class="comment"><div class="small">'+ escapeHTML(c.by) + ' • ' + new Date(c.when).toLocaleString() +'</div><div>'+ escapeHTML(c.text) +'</div>';
+    if(currentUser && currentUser.name === c.by){
+      s += '<div><button class="ghost" data-editcomment="'+c.id+'" data-msg="'+m.id+'">Edit</button></div>';
+    }
+    if(currentUser && currentUser.role === 'admin' && c.history && c.history.length){
+      s += '<div class="history-entry small">Previous versions:<br/>' + c.history.map(h=> 'On '+ new Date(h.when).toLocaleString() + ' → ' + escapeHTML(h.text)).join('<br/>') +'</div>';
+    }
+    s += '</div>';
+    return s;
+  }).join('');
+  let add = '';
+  if(currentUser){
+    add = '<div style="margin-top:6px"><button class="btn" data-addcomment="'+m.id+'">Add Comment</button></div>';
+  }
+  return '<div class="comments-area" id="comments-'+m.id+'">' + comments + add + '</div>';
+}
+
+// Exports / Imports
+function exportJson(){
+  const blob = new Blob([JSON.stringify(appData,null,2)], { type: 'application/json' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'gift_backup.json'; a.click();
+}
+function importJson(){
+  const ip = document.createElement('input'); ip.type='file'; ip.accept='application/json'; ip.onchange=(e)=>{ const f=e.target.files[0]; if(!f) return; const r=new FileReader(); r.onload=(ev)=>{ try{ const obj = JSON.parse(ev.target.result); appData = obj; save(); alert('Imported'); }catch(err){ alert('Invalid JSON'); } }; r.readAsText(f); }; ip.click();
+}
+
+// Music wiring
+function toggleMusic(){
+  const p = $('bgPlayer');
+  if(!p) return;
+  if(!p.src || p.src.indexOf('lofi.mp3')===-1) p.src = 'lofi.mp3';
+  if(p.paused) { p.play().then(()=>{ $('toggleAudioBtn').textContent='Pause'; }).catch(()=>{ alert('Autoplay blocked — click Play to start music.'); }); }
+  else { p.pause(); $('toggleAudioBtn').textContent='Play'; }
+}
+
+// Init: try to autoplay music
+try{
+  const bp = document.getElementById('bgPlayer');
+  if(bp){ bp.src = 'lofi.mp3'; bp.loop = true; bp.play().catch(()=>{}); }
+}catch(e){}
+
+// helpers exposed
+window.__gift_data = appData;
+window.__gift_save = save;

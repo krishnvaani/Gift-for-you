@@ -6,24 +6,18 @@ let appData = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null') || {
   messages: [], nextId: 1, activity: [], reminders: []
 };
 
+
+// --- credentials migration (ensure single canonical place) ---
+if(appData.settings){
+  appData.settings.adminUser = appData.settings.adminUser || (appData.settings.credentials && appData.settings.credentials.adminUser) || 'admin';
+  appData.settings.adminPass = appData.settings.adminPass || (appData.settings.credentials && appData.settings.credentials.adminPass) || 'admin';
+  appData.settings.receiverUser = appData.settings.receiverUser || (appData.settings.credentials && appData.settings.credentials.receiverUser) || 'receiver';
+  appData.settings.receiverPass = appData.settings.receiverPass || (appData.settings.credentials && appData.settings.credentials.receiverPass) || 'receiver';
+  if(appData.settings.credentials) delete appData.settings.credentials;
+  if(appData.settings.passwords) delete appData.settings.passwords;
+}
+
 let currentUser = null;
-function escapeHTML(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-
-function setAdminPassword(newPass){
-  if(!newPass) return false;
-  appData.settings.adminPass = String(newPass);
-  save();
-  logActivity('Admin password changed');
-  return true;
-}
-function checkCredentials(name, role, pass){
-  if(role==='admin'){
-    return name==='admin' && pass===appData.settings.adminPass;
-  } else {
-    return name===appData.settings.receiverUser && pass===appData.settings.receiverPass;
-  }
-}
-
 let observer = null;
 
 // UI refs
@@ -104,31 +98,7 @@ function setupEvents(){
 }
 
 // login
-document.getElementById("bgPlayer").src="lofi.mp3";document.getElementById("bgPlayer").play();
-function doLogin(){
-  const name = loginName.value.trim();
-  const role = loginRole.value;
-  const pass = loginPass.value;
-  if(!name){ alert('Enter name'); return; }
-  if(role==='admin'){
-    if(pass !== appData.settings.credentials.adminPass){ alert('Wrong admin password'); return; }
-  } else {
-    if(appData.settings.credentials.receiverPass && pass !== appData.settings.credentials.receiverPass){ alert('Wrong receiver password'); return; }
-  }
-  currentUser = { name, role };
-  userLabel.textContent = name + ' ('+role+')';
-  appData.activity.push(name + ' logged in as '+role+' at '+new Date().toLocaleString());
-  save();
-  // hide login and show app with fade
-  hideLogin();
-  setTimeout(()=>{ showApp(); document.getElementById('loginModal').classList.add('hidden'); },420);
-  // role UI
-  if(role==='admin'){ openAdminPanelBtn.classList.remove('hidden'); document.getElementById('logoutBtn').classList.remove('hidden'); document.getElementById('openAdminPanel').classList.remove('hidden'); } else { document.getElementById('logoutBtn').classList.remove('hidden'); }
-  startObserver();
-  // confetti + vibration
-  navigator.vibrate && navigator.vibrate(60);
-  showConfetti();
-}
+
 
 // confetti (simple)
 function showConfetti(){ const wrap = document.createElement('div'); wrap.className='confetti-wrap'; for(let i=0;i<18;i++){ const d=document.createElement('div'); d.className='confetti'; d.style.left=(Math.random()*90)+'%'; d.style.animationDelay=(Math.random()*900)+'ms'; d.textContent='❤️'; wrap.appendChild(d); } document.body.appendChild(wrap); setTimeout(()=>wrap.remove(),2200); }
@@ -165,6 +135,8 @@ function handleAttachAudio(e){
 
 // render
 function renderAll(){
+  try{ if(document.getElementById('adminUser')) document.getElementById('adminUser').value = appData.settings.adminUser || ''; if(document.getElementById('receiverUser')) document.getElementById('receiverUser').value = appData.settings.receiverUser || ''; }catch(e){}
+
   // header texts
   siteTitle.textContent = appData.settings.title;
   subtitle.textContent = appData.settings.subtitle;
@@ -470,185 +442,40 @@ function showSection(name){
 window.__gift_save = save;
 window.__gift_data = appData;
 
-document.getElementById("musicBtn").onclick=function(){
- let p=document.getElementById("bgPlayer");
- if(p.paused){p.play();} else p.pause();
-};
-
-document.getElementById("setPass").onclick=function(){
- if(currentUser && currentUser.role==="admin"){
-   let np=document.getElementById("newPass").value;
-   if(np){
-     appData.settings.passwords.adminPass=np;
-     save();
-     alert("Password changed");
-   }
- }
-};
-
-document.getElementById("fab").onclick=function(){
- alert("Info:\n+ Button: help\nMusic button: play/pause music\nAdmin can change password and set reminders.");
-};
 
 
+function doLogin(){
+  const name = (document.getElementById('loginName')||{value:''}).value.trim();
+  const role = (document.getElementById('loginRole')||{value:'receiver'}).value;
+  const pass = (document.getElementById('loginPass')||{value:''}).value.trim();
+  if(!name){ alert('Enter name'); return; }
+  if(!checkCredentials(name, role, pass)){ alert('Wrong username or password'); return; }
+  currentUser = { name, role };
+  userLabel.textContent = name + ' ('+role+')';
+  appData.activity.push(name + ' logged in as '+role+' at '+new Date().toLocaleString());
+  save();
+  hideLogin();
+  setTimeout(()=>{ showApp(); document.getElementById('loginModal').classList.add('hidden'); },420);
+  navigator.vibrate && navigator.vibrate(60);
+  showConfetti();
+  startObserver();
+  if(window.Notification && Notification.permission !== 'granted'){ Notification.requestPermission(); }
+}
 
 
-// PASSWORD CHANGE UI wiring
+
 document.addEventListener('click', function(e){
-  if(e.target && e.target.id==='setPass'){
-    let newPass = document.getElementById('newPass').value.trim();
-    if(!newPass){ alert('Enter new password'); return; }
-    // require admin authentication: if logged in as admin, allow; else prompt for current admin password
-    if(currentUser && currentUser.role==='admin'){
-      setAdminPassword(newPass);
-      alert('Admin password updated');
-      document.getElementById('newPass').value='';
-    } else {
-      let cur = prompt('Enter current admin password to change it:');
-      if(cur===appData.settings.adminPass){
-        setAdminPassword(newPass);
-        alert('Admin password updated');
-        document.getElementById('newPass').value='';
-      } else alert('Incorrect current admin password.');
-    }
-  }
-});
-
-// LOGIN handling: modify doLogin logic to use checkCredentials
-(function(){
-  const doLoginBtn = document.getElementById('doLogin');
-  doLoginBtn.addEventListener('click', function(){
-    const name = document.getElementById('loginName').value.trim();
-    const role = document.getElementById('loginRole').value;
-    const pwd = document.getElementById('loginPass').value || '';
-    if(!name){ alert('Enter name'); return; }
-    if(!checkCredentials(name, role, pwd)){
-      alert('Invalid credentials');
-      return;
-    }
-    currentUser = { name, role };
-    logActivity(name + ' logged in as ' + role);
-    document.getElementById('loginModal').classList.remove('visible-opacity');
+  if(e.target && e.target.id==='saveCreds'){
+    if(!currentUser || currentUser.role!=='admin'){ alert('Only admin can change credentials'); return; }
+    const aUser = (document.getElementById('adminUser')||{value:''}).value.trim();
+    const aPass = (document.getElementById('adminPass')||{value:''}).value;
+    const rUser = (document.getElementById('receiverUser')||{value:''}).value.trim();
+    const rPass = (document.getElementById('receiverPass')||{value:''}).value;
+    if(aUser) appData.settings.adminUser = aUser;
+    if(aPass) appData.settings.adminPass = aPass;
+    if(rUser) appData.settings.receiverUser = rUser;
+    if(rPass) appData.settings.receiverPass = rPass;
     save();
-    renderUI();
-    // request notification permission for reminders (if receiver/admin)
-    if(Notification && Notification.permission!=='granted'){
-      Notification.requestPermission().then(()=>{});
-    }
-  });
-})();
-
-// SEEN tracking: mark message as seen when receiver opens a message in read view
-function markSeen(msgId){
-  const m = appData.messages.find(x=>x.id===msgId);
-  if(!m) return;
-  m.seen = true;
-  m.seenAt = new Date().toISOString();
-  save();
-  renderUI();
-}
-
-// COMMENTS: per-message comments editable by receiver
-function saveComment(msgId, text){
-  let m = appData.messages.find(x=>x.id===msgId);
-  if(!m) return;
-  m.comment = m.comment || { text: '', updatedAt: null };
-  m.comment.text = text;
-  m.comment.updatedAt = new Date().toISOString();
-  save();
-  logActivity('Comment updated on msg ' + msgId);
-  renderUI();
-}
-
-// REMINDERS: create reminder scheduled, both in-app and browser notification
-function scheduleReminder(rem){
-  // rem: {id, msgId, whenISO, title, createdBy}
-  appData.reminders = appData.reminders || [];
-  appData.reminders.push(rem);
-  save();
-  logActivity('Reminder set for ' + rem.whenISO + ' by ' + rem.createdBy);
-  renderUI();
-}
-
-// simple runner to check upcoming reminders every 15s
-setInterval(function(){
-  const now = new Date();
-  (appData.reminders||[]).forEach((r)=>{
-    if(!r.fired && new Date(r.whenISO) <= now){
-      r.fired = true;
-      // in-app alert push
-      appData.activity.push('[Reminder] ' + r.title + ' — due ' + r.whenISO);
-      // browser notification
-      if(window.Notification && Notification.permission==='granted'){
-        try{ new Notification('Reminder: ' + r.title, { body: r.whenISO }); }catch(e){}
-      }
-      save();
-      renderUI();
-    }
-  });
-},15000);
-
-
-
-
-// Delegated listeners for comment save, comment toggle, reminders and marking seen
-document.addEventListener('click', function(e){
-  // Save comment
-  const savec = e.target && e.target.dataset && e.target.dataset.savec;
-  if(savec){
-    const id = Number(savec);
-    const ta = document.getElementById('cbox-'+id);
-    if(ta){ saveComment(id, ta.value.trim()); alert('Comment saved'); }
+    alert('Credentials updated');
   }
-  // Comment toggle (not used)
-  if(e.target && e.target.dataset && e.target.dataset.comment){
-    const id = Number(e.target.dataset.comment);
-    const area = document.getElementById('comments-'+id);
-    if(area) area.classList.toggle('open');
-  }
-  // Reminder set buttons: open prompt for date/time
-  if(e.target && e.target.dataset && e.target.dataset.setrem){
-    const id = Number(e.target.dataset.setrem);
-    const when = prompt('Enter reminder date/time in format YYYY-MM-DD HH:MM (24h)');
-    if(when){
-      // parse
-      const iso = new Date(when.replace(' ','T')).toISOString();
-      scheduleReminder({ id: 'rem-'+Math.random().toString(36).slice(2), msgId:id, whenISO:iso, title:'Reminder for message '+id, createdBy: currentUser?currentUser.name:'unknown' });
-      alert('Reminder scheduled at ' + iso);
-    }
-  }
-  if(e.target && e.target.dataset && e.target.dataset.reminder){
-    const id = Number(e.target.dataset.reminder);
-    const when = prompt('Enter reminder date/time in format YYYY-MM-DD HH:MM (24h)');
-    if(when){
-      const iso = new Date(when.replace(' ','T')).toISOString();
-      scheduleReminder({ id: 'rem-'+Math.random().toString(36).slice(2), msgId:id, whenISO:iso, title:'Reminder for message '+id, createdBy: currentUser?currentUser.name:'unknown' });
-      alert('Reminder scheduled at ' + iso);
-    }
-  }
-  // Mark seen when admin opens read view? We'll mark seen when receiver clicks on a message title link (data-open-msg)
-  if(e.target && e.target.dataset && e.target.dataset.openMsg){
-    const id = Number(e.target.dataset.openMsg);
-    if(currentUser && currentUser.role!=='admin'){ markSeen(id); }
-  }
-});
-
-
-
-// Background music wiring
-const bgPlayer = document.getElementById('bgPlayer');
-if(bgPlayer){
-  bgPlayer.src = 'lofi.mp3';
-  bgPlayer.loop = true;
-  // try autoplay
-  bgPlayer.play().catch(()=>{});
-}
-// music button toggle
-document.addEventListener('click', function(e){
-  if(e.target && e.target.id==='musicBtn'){
-    if(bgPlayer.paused) { bgPlayer.play().then(()=>{ e.target.textContent='⏸'; }).catch(()=>{ alert('Autoplay blocked. Click to start.'); }); }
-    else { bgPlayer.pause(); e.target.textContent='🎵'; }
-  }
-  if(e.target && e.target.id==='fab'){ document.getElementById('helpModal').classList.toggle('hidden'); }
-  if(e.target && e.target.id==='closeHelp'){ document.getElementById('helpModal').classList.add('hidden'); }
 });

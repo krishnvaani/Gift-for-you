@@ -84,6 +84,21 @@
 
   <button id="fab" class="fab">+</button><button id="musicBtn" class="fab2">🎵</button>
   <audio id="bgPlayer" loop></audio>
+
+<div id="helpModal" class="modal help hidden">
+  <div class="modal-box">
+    <h3>Help & Info</h3>
+    <ul>
+      <li>Admin can change password (use Change Password area) — needs admin auth.</li>
+      <li>Background music plays automatically when allowed. Use 🎵 to toggle.</li>
+      <li>Receiver can comment on each message and edit comments later.</li>
+      <li>Set reminders per message (date/time). Browser notifications requested.</li>
+      <li>Admin can see if a message was seen by receiver.</li>
+    </ul>
+    <button id="closeHelp" class="ghost">Close</button>
+  </div>
+</div>
+
 </div>
 
 <script src="script.js"></script>

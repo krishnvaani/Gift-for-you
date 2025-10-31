@@ -13,7 +13,8 @@
 .modal{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.45);backdrop-filter:blur(8px);z-index:9999}
 .modal-inner{background:white;padding:20px;border-radius:14px;width:320px;text-align:center;box-shadow:0 12px 40px rgba(0,0,0,0.12)}
 .hidden{display:none}
-.hidden-opacity{opacity:0;pointer-events:none;visibility:hidden;transition:opacity .25s}
+/* FIX: ensure invisible modal doesn't block clicks */
+.hidden-opacity{opacity:0;pointer-events:none !important;visibility:hidden;transition:opacity .25s}
 .visible-opacity{opacity:1;visibility:visible;pointer-events:auto;transition:opacity .25s}
 header{display:flex;justify-content:space-between;align-items:center;padding:18px;background:linear-gradient(135deg,var(--primary),var(--secondary));color:white}
 .brand{display:flex;gap:14px;align-items:center}

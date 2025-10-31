@@ -74,6 +74,25 @@
         <button id="exportJson" class="btn ghost">Export JSON</button>
         <button id="importJson" class="btn ghost">Import JSON</button>
       </div>
+      
+      <h3>Change Passwords</h3>
+      <div class="form-row">
+        <label>Admin Password</label>
+        <input type="password" id="adminPassword" placeholder="New admin password">
+        <button id="changeAdminPass" class="btn ghost">Change</button>
+      </div>
+      <div class="form-row">
+        <label>Receiver Password</label>
+        <input type="password" id="receiverPassword" placeholder="New receiver password">
+        <button id="changeReceiverPass" class="btn ghost">Change</button>
+      </div>
+      
+      <h3>Background Music</h3>
+      <div class="form-row">
+        <input type="file" id="changeBgMusic" accept="audio/*">
+        <button id="resetBgMusic" class="btn ghost">Reset to Default</button>
+      </div>
+      
       <h3>Manage Content</h3>
       <div id="contentList"></div>
       <h3>Activity Log</h3>
@@ -81,7 +100,7 @@
     </section>
   </main>
 
-  <button id="fab" class="fab">+</button>
+  <button id="fab" class="fab">?</button>
   <audio id="bgPlayer" loop></audio>
 </div>
 

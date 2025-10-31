@@ -10,17 +10,22 @@
 <div id="loginModal" class="modal visible-opacity">
   <div class="modal-box">
     <h2>Login</h2>
-    <input id="loginName" placeholder="Your name" autocomplete="off">
-    <select id="loginRole">
-      <option value="receiver">Receiver</option>
-      <option value="admin">Admin</option>
-    </select>
-    <input id="loginPass" type="password" placeholder="Password">
+    <div class="form-row">
+      <input id="loginName" placeholder="Your name" autocomplete="off">
+    </div>
+    <div class="form-row">
+      <select id="loginRole">
+        <option value="receiver">Receiver</option>
+        <option value="admin">Admin</option>
+      </select>
+    </div>
+    <div class="form-row">
+      <input id="loginPass" type="password" placeholder="Password">
+    </div>
     <div class="row">
       <button id="doLogin" class="btn primary">Login</button>
       <button id="closeLogin" class="btn ghost">Close</button>
     </div>
-    <div class="muted">Default: admin/admin • receiver/receiver</div>
   </div>
 </div>
 
@@ -35,7 +40,7 @@
     </div>
     <div class="right">
       <div id="userLabel" class="muted-note">Not logged in</div>
-      <button id="toggleAudioBtn" class="btn ghost hidden">Play</button>
+      <button id="toggleAudioBtn" class="btn ghost hidden">Play Music</button>
       <button id="logoutBtn" class="btn ghost hidden">Logout</button>
     </div>
   </header>

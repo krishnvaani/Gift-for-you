@@ -8,18 +8,18 @@
 </head>
 <body>
 
-<!-- LOGIN MODAL (centered, fade+blur) -->
+<!-- LOGIN MODAL (no visible default credentials here) -->
 <div id="loginModal" class="modal visible-opacity">
-  <div class="modal-inner">
-    <h2>Welcome</h2>
-    <input id="loginName" placeholder="Username" autocomplete="off">
-    <input id="loginPass" type="password" placeholder="Password" autocomplete="off">
+  <div class="modal-inner" role="dialog" aria-labelledby="loginTitle">
+    <h2 id="loginTitle">Welcome</h2>
+    <input id="loginName" placeholder="Username" autocomplete="off" />
+    <input id="loginPass" type="password" placeholder="Password" autocomplete="off" />
     <div style="display:flex;gap:8px;margin-top:12px;">
-      <button id="doLogin" class="btn">Login</button>
-      <button id="closeLogin" class="btn ghost">Cancel</button>
+      <button id="doLogin" type="button" class="btn">Login</button>
+      <button id="closeLogin" type="button" class="btn ghost">Cancel</button>
     </div>
-    <div id="loginError" class="err"></div>
-    <div class="muted-note" style="margin-top:8px">Admin: <strong>admin / admin123</strong> • Receiver: <strong>receiver / receiver123</strong></div>
+    <div id="loginError" class="err" aria-live="polite"></div>
+    <div class="muted-note" style="margin-top:8px; font-size:0.85rem;">If you forgot credentials, admin can change them after logging in.</div>
   </div>
 </div>
 
@@ -49,19 +49,16 @@
   </nav>
 
   <main class="container">
-    <!-- Read -->
     <section id="readView" class="panel active">
       <h2>Today's Message <small id="todayDate"></small></h2>
       <div id="todayContent" class="content-area"></div>
     </section>
 
-    <!-- Archive -->
     <section id="archiveView" class="panel hidden">
       <h2>All Messages</h2>
       <div id="archiveContent"></div>
     </section>
 
-    <!-- Admin -->
     <section id="adminView" class="panel hidden">
       <h2>Admin Panel</h2>
 
@@ -84,12 +81,29 @@
       <h3 style="margin-top:16px;">Activity</h3>
       <div id="activityLog" class="activity"></div>
 
-      <h3 style="margin-top:16px;">Account</h3>
-      <div class="form-row"><label>Change Admin Password</label><input id="changeAdminPass" type="password" placeholder="New admin password"></div>
-      <div style="display:flex;gap:8px"><button id="saveAdminPass" class="btn">Save</button></div>
+      <h3 style="margin-top:16px;">Account - Change credentials</h3>
+      <div class="form-row">
+        <label>Admin Username</label>
+        <input id="adminUserInput" placeholder="admin" />
+      </div>
+      <div class="form-row">
+        <label>Admin Password</label>
+        <input id="adminPassInput" type="password" placeholder="new admin password" />
+      </div>
+      <div class="form-row">
+        <label>Receiver Username</label>
+        <input id="recUserInput" placeholder="receiver" />
+      </div>
+      <div class="form-row">
+        <label>Receiver Password</label>
+        <input id="recPassInput" type="password" placeholder="new receiver password" />
+      </div>
+      <div style="display:flex;gap:8px">
+        <button id="saveCredsBtn" class="btn">Save Credentials</button>
+      </div>
+
     </section>
 
-    <!-- Info -->
     <section id="infoView" class="panel hidden">
       <h2>Info</h2>
       <div class="muted-note">
@@ -104,7 +118,6 @@
     </section>
   </main>
 
-  <!-- FAB with labels (you asked for labeled actions) -->
   <button id="fab" class="fab">+</button>
   <div id="fabMenu" class="fab-menu hidden">
     <button id="fabAddMsg" class="btn ghost">Add Message</button>

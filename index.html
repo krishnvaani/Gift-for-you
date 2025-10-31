@@ -3,133 +3,86 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title id="pageTitle">My Heart's Journey</title>
+<title id="pageTitle">Happy Birthday 💖</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-<!-- LOGIN MODAL (no visible default credentials here) -->
 <div id="loginModal" class="modal visible-opacity">
-  <div class="modal-inner" role="dialog" aria-labelledby="loginTitle">
-    <h2 id="loginTitle">Welcome</h2>
-    <input id="loginName" placeholder="Username" autocomplete="off" />
-    <input id="loginPass" type="password" placeholder="Password" autocomplete="off" />
-    <div style="display:flex;gap:8px;margin-top:12px;">
-      <button id="doLogin" type="button" class="btn">Login</button>
-      <button id="closeLogin" type="button" class="btn ghost">Cancel</button>
+  <div class="modal-box">
+    <h2>Login</h2>
+    <input id="loginName" placeholder="Your name" autocomplete="off">
+    <select id="loginRole">
+      <option value="receiver">Receiver</option>
+      <option value="admin">Admin</option>
+    </select>
+    <input id="loginPass" type="password" placeholder="Password">
+    <div class="row">
+      <button id="doLogin" class="btn primary">Login</button>
+      <button id="closeLogin" class="btn ghost">Close</button>
     </div>
-    <div id="loginError" class="err" aria-live="polite"></div>
-    <div class="muted-note" style="margin-top:8px; font-size:0.85rem;">If you forgot credentials, admin can change them after logging in.</div>
+    <div class="muted">Default: admin/admin • receiver/receiver</div>
   </div>
 </div>
 
-<!-- Main app -->
-<div id="app" class="hidden-opacity">
-  <header>
-    <div class="brand">
-      <img id="heartImage" class="heart" src="" alt="heart (click to upload)">
+<div id="app" class="app hidden-opacity">
+  <header class="header">
+    <div class="left">
+      <img id="heartImage" src="heart.jpg" class="heart" alt="heart" />
       <div class="titles">
-        <h1 id="siteTitle" contenteditable="true">My Heart's Journey</h1>
-        <div id="subtitle" contenteditable="true" class="subtitle">Every day with you is a new chapter in my favorite story.</div>
+        <h1 id="siteTitle" contenteditable="false">Happy Birthday 💖</h1>
+        <div id="subtitle" class="subtitle" contenteditable="false">Every day with you is a new chapter in my favorite story.</div>
       </div>
     </div>
-
-    <div class="controls">
+    <div class="right">
       <div id="userLabel" class="muted-note">Not logged in</div>
       <button id="toggleAudioBtn" class="btn ghost hidden">Play</button>
-      <button id="logoutBtn" class="btn ghost">Logout</button>
+      <button id="logoutBtn" class="btn ghost hidden">Logout</button>
     </div>
   </header>
 
-  <nav class="tabs">
-    <button class="tab active" id="tabRead">Read</button>
-    <button class="tab" id="tabArchive">Archive</button>
-    <button class="tab hidden" id="tabAdmin">Admin</button>
-    <button class="tab" id="tabInfo">Info</button>
-  </nav>
-
   <main class="container">
-    <!-- Read -->
-    <section id="readView" class="panel active">
-      <h2>Today's Message <small id="todayDate"></small></h2>
-      <div id="todayContent" class="content-area"></div>
+    <section class="controls">
+      <button id="openAdminPanel" class="btn ghost hidden">Admin Panel</button>
+      <button id="openArchive" class="btn ghost">All Messages</button>
+      <button id="openRead" class="btn ghost">Read Content</button>
+      <div class="muted-note">Tip: Tap the heart (admin) to change photo. Tap any editable text to edit (admin).</div>
     </section>
 
-    <!-- Archive -->
+    <section id="readView" class="panel">
+      <h2>Today's Message</h2>
+      <div id="todayContent"></div>
+    </section>
+
     <section id="archiveView" class="panel hidden">
-      <h2>All Messages</h2>
+      <h2>All Messages & Poems</h2>
       <div id="archiveContent"></div>
     </section>
 
-    <!-- Admin -->
-    <section id="adminView" class="panel hidden">
+    <section id="adminPanel" class="panel hidden">
       <h2>Admin Panel</h2>
-
-      <div class="form-row"><label>Type</label><select id="contentType"><option value="message">Message</option><option value="poem">Poem</option></select></div>
+      <div class="form-row">
+        <label>Type</label>
+        <select id="contentType"><option value="message">Message</option><option value="poem">Poem</option></select>
+      </div>
       <div class="form-row"><label>Title</label><input id="contentTitle"></div>
       <div class="form-row"><label>Content</label><textarea id="contentText"></textarea></div>
-      <div class="form-row"><label>Schedule Date</label><input id="scheduleDate" type="date"></div>
-      <div class="form-row"><label>Schedule Time</label><input id="scheduleTime" type="time" value="09:00"></div>
-      <div class="form-row"><label>Attach Audio (background OR per message)</label><input id="attachAudio" type="file" accept="audio/*"></div>
-
-      <div style="display:flex;gap:8px;margin-top:8px;">
+      <div class="form-row"><label>Schedule date</label><input id="scheduleDate" type="date"></div>
+      <div class="form-row"><label>Schedule time</label><input id="scheduleTime" type="time" value="09:00"></div>
+      <div class="form-row"><label>Attach audio (optional)</label><input id="attachAudio" type="file" accept="audio/*"></div>
+      <div class="row">
         <button id="addContentBtn" class="btn primary">Upload Content</button>
         <button id="exportJson" class="btn ghost">Export JSON</button>
         <button id="importJson" class="btn ghost">Import JSON</button>
       </div>
-
-      <h3 style="margin-top:16px;">Manage Content</h3>
+      <h3>Change Password</h3><input id="newPass" placeholder="New Password"><button id="setPass">Set Password</button><hr>
+<h3>Manage Content</h3>
       <div id="contentList"></div>
-
-      <h3 style="margin-top:16px;">Activity</h3>
+      <h3>Activity Log</h3>
       <div id="activityLog" class="activity"></div>
-
-      <h3 style="margin-top:16px;">Account - Change credentials</h3>
-      <div class="form-row">
-        <label>Admin Username</label>
-        <input id="adminUserInput" placeholder="admin" />
-      </div>
-      <div class="form-row">
-        <label>Admin Password</label>
-        <input id="adminPassInput" type="password" placeholder="new admin password" />
-      </div>
-      <div class="form-row">
-        <label>Receiver Username</label>
-        <input id="recUserInput" placeholder="receiver" />
-      </div>
-      <div class="form-row">
-        <label>Receiver Password</label>
-        <input id="recPassInput" type="password" placeholder="new receiver password" />
-      </div>
-      <div style="display:flex;gap:8px">
-        <button id="saveCredsBtn" class="btn">Save Credentials</button>
-      </div>
-
-    </section>
-
-    <!-- Info -->
-    <section id="infoView" class="panel hidden">
-      <h2>Info</h2>
-      <div class="muted-note">
-        <ul>
-          <li><strong>Play button</strong> - toggles background music (autoplays after first tap)</li>
-          <li><strong>FAB (+)</strong> - quick actions (labels shown)</li>
-          <li><strong>Comments</strong> - receiver can add/edit comments; admin can view previous versions</li>
-          <li><strong>Reminders</strong> - set reminders with date/time</li>
-          <li><strong>Export/Import</strong> - backup or restore site data (JSON)</li>
-        </ul>
-      </div>
     </section>
   </main>
 
-  <!-- FAB with labels -->
-  <button id="fab" class="fab">+</button>
-  <div id="fabMenu" class="fab-menu hidden">
-    <button id="fabAddMsg" class="btn ghost">Add Message</button>
-    <button id="fabAddComment" class="btn ghost">Add Comment</button>
-    <button id="fabAddRem" class="btn ghost">Set Reminder</button>
-  </div>
-
+  <button id="fab" class="fab">+</button><button id="musicBtn" class="fab2">🎵</button>
   <audio id="bgPlayer" loop></audio>
 </div>
 

@@ -1,106 +1,26 @@
-body {
-  margin: 0;
-  font-family: "Poppins", sans-serif;
-  background: #ffc1d3;
-  text-align: center;
-  overflow: hidden;
+:root{
+  --bg:#ffd7e6;
+  --card:#fff;
+  --accent:#ff4d89;
+  --muted:#666;
 }
-
-.page {
-  display: none;
-  height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-}
-
-.page.active {
-  display: flex;
-}
-
-.login-box {
-  background: white;
-  padding: 25px;
-  border-radius: 15px;
-  width: 80%;
-  max-width: 320px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-}
-
-input {
-  width: 90%;
-  padding: 12px;
-  margin: 7px 0;
-  border-radius: 8px;
-  border: none;
-  outline: none;
-  background: #ffeaf1;
-  font-size: 15px;
-}
-
-button {
-  background: #ff4d89;
-  color: white;
-  border: none;
-  padding: 12px 20px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 16px;
-  width: 90%;
-}
-
-button:hover {
-  background: #ff1f73;
-}
-
-.error {
-  color: red;
-  font-size: 14px;
-}
-
-#giftBox {
-  font-size: 100px;
-  cursor: pointer;
-  animation: bounce 1s infinite;
-}
-
-@keyframes bounce {
-  0%,100% { transform: translateY(0);}
-  50% { transform: translateY(-12px);}
-}
-
-.password-field {
-  position: relative;
-  width: 90%;
-  display: flex;
-  justify-content: center;
-}
-
-#togglePassword {
-  position: absolute;
-  right: 15px;
-  top: 13px;
-  cursor: pointer;
-}
-
-#messageText {
-  padding: 15px;
-  font-size: 20px;
-  width: 90%;
-}
-
-.hearts {
-  position: fixed;
-  bottom: -10px;
-  width: 20px;
-  height: 20px;
-  background-image: url("assets/heart.png");
-  background-size: cover;
-  animation: floatUp 4s linear infinite;
-}
-
-@keyframes floatUp {
-  0% { opacity: 1; transform: translateY(0);}
-  100% { opacity: 0; transform: translateY(-120vh);}
-}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;background:var(--bg);-webkit-font-smoothing:antialiased}
+.page{display:none;height:100vh;align-items:center;justify-content:center;flex-direction:column;display:flex;padding:22px}
+.page.active{display:flex}
+.login-box{background:var(--card);padding:22px;border-radius:14px;max-width:360px;width:100%;box-shadow:0 10px 30px rgba(0,0,0,0.08);text-align:center}
+.login-box h2{margin:0 0 12px}
+input{width:100%;padding:12px;border-radius:10px;border:0;background:#fff4fb;margin:10px 0;font-size:15px}
+button{cursor:pointer;border:0;padding:10px 14px;border-radius:10px;background:linear-gradient(135deg,var(--accent),#ff1f73);color:white;font-size:15px}
+button.ghost{background:transparent;color:#333;border:1px solid rgba(0,0,0,0.06);padding:8px 12px}
+.password-field{position:relative;display:flex;align-items:center}
+.password-field input{padding-right:46px}
+#togglePassword{position:absolute;right:8px;background:transparent;border:0;font-size:18px;padding:8px;cursor:pointer}
+.error{color:#d44;margin-top:6px;display:block;min-height:18px}
+#giftBox{font-size:96px;cursor:pointer;border-radius:18px;padding:18px;background:linear-gradient(180deg,#fff8fc,#ffeef7);box-shadow:0 12px 30px rgba(0,0,0,0.06);display:inline-flex;align-items:center;justify-content:center;user-select:none}
+#giftBox:active{transform:scale(0.98)}
+.muted-note{color:var(--muted);margin-top:10px}
+#messageText{max-width:780px;white-space:pre-line;padding:12px;font-size:18px}
+.hearts{position:fixed;bottom:-40px;width:28px;height:28px;background-image:url("assets/heart.png");background-size:cover;pointer-events:none;opacity:0;transform:translateY(0);animation:floatUp 3.8s linear forwards}
+@keyframes floatUp{0%{opacity:1;transform:translateY(0) scale(1)}50%{transform:translateY(-40vh) scale(1.05)}100%{opacity:0;transform:translateY(-120vh) scale(0.85)}}
+@media(max-width:520px){#giftBox{font-size:64px;padding:12px}}

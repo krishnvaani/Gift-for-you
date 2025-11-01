@@ -1,5 +1,5 @@
 // Final single-file app logic
-const STORAGE_KEY = 'gift_for_you_final_v4';
+const STORAGE_KEY = 'gift_for_you_final_v5';
 let appData = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null') || {
   settings: { 
     title: 'Happy Birthday 💖', 
@@ -23,158 +23,13 @@ let appData = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null') || {
 let currentUser = null;
 let observer = null;
 
-// UI refs
-const loginModal = document.getElementById('loginModal');
-const appEl = document.getElementById('app');
-const doLoginBtn = document.getElementById('doLogin');
-const closeLoginBtn = document.getElementById('closeLogin');
-const loginName = document.getElementById('loginName');
-const loginPass = document.getElementById('loginPass');
-const loginRole = document.getElementById('loginRole');
-
-const siteTitle = document.getElementById('siteTitle');
-const subtitle = document.getElementById('subtitle');
-const heartImage = document.getElementById('heartImage');
-const userLabel = document.getElementById('userLabel');
-const toggleAudioBtn = document.getElementById('toggleAudioBtn');
-const logoutBtn = document.getElementById('logoutBtn');
-
-const openAdminPanelBtn = document.getElementById('openAdminPanel');
-const openArchiveBtn = document.getElementById('openArchive');
-const openReadBtn = document.getElementById('openRead');
-
-const readView = document.getElementById('readView');
-const archiveView = document.getElementById('archiveView');
-const adminPanel = document.getElementById('adminPanel');
-
-const todayContent = document.getElementById('todayContent');
-const archiveContent = document.getElementById('archiveContent');
-const contentList = document.getElementById('contentList');
-const activityLog = document.getElementById('activityLog');
-
-const addContentBtn = document.getElementById('addContentBtn');
-const contentType = document.getElementById('contentType');
-const contentTitle = document.getElementById('contentTitle');
-const contentText = document.getElementById('contentText');
-const scheduleDate = document.getElementById('scheduleDate');
-const scheduleTime = document.getElementById('scheduleTime');
-const attachAudio = document.getElementById('attachAudio');
-
-const bgPlayer = document.getElementById('bgPlayer');
-const fab = document.getElementById('fab');
-
-// New elements for features
-const changeAdminPassBtn = document.getElementById('changeAdminPass');
-const changeReceiverPassBtn = document.getElementById('changeReceiverPass');
-const adminPassword = document.getElementById('adminPassword');
-const receiverPassword = document.getElementById('receiverPassword');
-const changeBgMusic = document.getElementById('changeBgMusic');
-const resetBgMusic = document.getElementById('resetBgMusic');
-
-function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(appData)); renderAll(); }
-
-// Initialize UI - SIMPLE AND WORKING
-document.addEventListener('DOMContentLoaded', ()=>{
-  console.log('App loaded');
-  setupEvents();
-  renderAll();
-  
-  // Show login modal initially (app is hidden by default)
-  loginModal.classList.remove('hidden');
-  
-  // Auto-play background music after a delay
-  setTimeout(() => {
-    if (appData.settings.bgMusic) {
-      bgPlayer.src = appData.settings.bgMusic;
-      bgPlayer.play().catch(e => console.log('Auto-play prevented, user interaction required'));
-    }
-  }, 2000);
-  
-  setInterval(scheduledReleaseCheck, 30000);
-});
-
-function setupEvents(){
-  console.log('Setting up events');
-  
-  // Login events - SIMPLE AND DIRECT
-  doLoginBtn.addEventListener('click', doLogin);
-  closeLoginBtn.addEventListener('click', () => {
-    loginModal.classList.add('hidden');
-  });
-  
-  // Allow Enter key to login
-  loginPass.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-      doLogin();
-    }
-  });
-  
-  logoutBtn.addEventListener('click', () => { 
-    location.reload(); 
-  });
-  
-  openAdminPanelBtn.addEventListener('click', () => { 
-    showSection('admin'); 
-  });
-  openArchiveBtn.addEventListener('click', () => { 
-    showSection('archive'); 
-  });
-  openReadBtn.addEventListener('click', () => { 
-    showSection('read'); 
-  });
-  
-  addContentBtn.addEventListener('click', addContent);
-  attachAudio.addEventListener('change', handleAttachAudio);
-  toggleAudioBtn.addEventListener('click', toggleBackgroundMusic);
-  
-  fab.addEventListener('click', showInfo);
-  
-  heartImage.addEventListener('click', () => { 
-    if(!currentUser || currentUser.role!=='admin') return; 
-    uploadHeart(); 
-  });
-  
-  siteTitle.addEventListener('click', () => { 
-    if(!currentUser || currentUser.role!=='admin') return; 
-    siteTitle.contentEditable=true; 
-    siteTitle.focus(); 
-  });
-  
-  subtitle.addEventListener('click', () => { 
-    if(!currentUser || currentUser.role!=='admin') return; 
-    subtitle.contentEditable=true; 
-    subtitle.focus(); 
-  });
-  
-  subtitle.addEventListener('blur', () => { 
-    appData.settings.subtitle = subtitle.textContent; 
-    save(); 
-  });
-  
-  siteTitle.addEventListener('blur', () => { 
-    appData.settings.title = siteTitle.textContent; 
-    document.title = siteTitle.textContent; 
-    save(); 
-  });
-  
-  // New feature event listeners
-  changeAdminPassBtn.addEventListener('click', changeAdminPassword);
-  changeReceiverPassBtn.addEventListener('click', changeReceiverPassword);
-  changeBgMusic.addEventListener('change', handleBgMusicChange);
-  resetBgMusic.addEventListener('click', resetBgMusicToDefault);
-  
-  // Import/Export
-  document.getElementById('exportJson').addEventListener('click', exportData);
-  document.getElementById('importJson').addEventListener('click', importData);
-}
-
-// SIMPLE AND TESTED LOGIN FUNCTION
+// SIMPLE AND WORKING LOGIN FUNCTION
 function doLogin(){
-  console.log('Login button clicked');
+  console.log('Login function called');
   
-  const name = loginName.value.trim();
-  const role = loginRole.value;
-  const pass = loginPass.value;
+  const name = document.getElementById('loginName').value.trim();
+  const role = document.getElementById('loginRole').value;
+  const pass = document.getElementById('loginPass').value;
   
   console.log('Login attempt:', { name, role, pass });
   
@@ -189,8 +44,8 @@ function doLogin(){
     return; 
   }
   
+  // Check credentials
   let isValid = false;
-  
   if(role === 'admin'){
     isValid = (pass === appData.settings.credentials.adminPass);
     if(!isValid) {
@@ -208,22 +63,22 @@ function doLogin(){
   // Login successful
   console.log('Login successful');
   currentUser = { name, role };
-  userLabel.textContent = name + ' (' + role + ')';
+  document.getElementById('userLabel').textContent = name + ' (' + role + ')';
   
   // Add to activity log
   appData.activity.push(name + ' logged in as ' + role + ' at ' + new Date().toLocaleString());
   save();
   
-  // Hide login and show app - SIMPLE APPROACH
-  loginModal.classList.add('hidden');
-  appEl.classList.remove('hidden');
+  // Hide login and show app
+  document.getElementById('loginModal').classList.add('hidden');
+  document.getElementById('app').classList.remove('hidden');
   
   // Show appropriate UI based on role
   if(role === 'admin'){
-    openAdminPanelBtn.classList.remove('hidden');
+    document.getElementById('openAdminPanel').classList.remove('hidden');
   }
-  logoutBtn.classList.remove('hidden');
-  toggleAudioBtn.classList.remove('hidden');
+  document.getElementById('logoutBtn').classList.remove('hidden');
+  document.getElementById('toggleAudioBtn').classList.remove('hidden');
   
   startObserver();
   
@@ -236,19 +91,121 @@ function doLogin(){
   console.log('Login process completed');
 }
 
+// Initialize UI
+document.addEventListener('DOMContentLoaded', ()=>{
+  console.log('DOM loaded - setting up login button');
+  
+  // DIRECT EVENT LISTENER - NO COMPLEX SETUP
+  document.getElementById('doLogin').addEventListener('click', doLogin);
+  
+  // Also allow Enter key in password field
+  document.getElementById('loginPass').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+      doLogin();
+    }
+  });
+  
+  // Close button
+  document.getElementById('closeLogin').addEventListener('click', () => {
+    document.getElementById('loginModal').classList.add('hidden');
+  });
+  
+  // Setup other events
+  setupOtherEvents();
+  renderAll();
+  
+  // Show login modal initially
+  document.getElementById('loginModal').classList.remove('hidden');
+  
+  // Auto-play background music after a delay
+  setTimeout(() => {
+    if (appData.settings.bgMusic) {
+      document.getElementById('bgPlayer').src = appData.settings.bgMusic;
+      document.getElementById('bgPlayer').play().catch(e => console.log('Auto-play prevented'));
+    }
+  }, 1000);
+  
+  setInterval(scheduledReleaseCheck, 30000);
+});
+
+function setupOtherEvents(){
+  // Logout
+  document.getElementById('logoutBtn').addEventListener('click', () => { 
+    location.reload(); 
+  });
+  
+  // Navigation
+  document.getElementById('openAdminPanel').addEventListener('click', () => { 
+    showSection('admin'); 
+  });
+  document.getElementById('openArchive').addEventListener('click', () => { 
+    showSection('archive'); 
+  });
+  document.getElementById('openRead').addEventListener('click', () => { 
+    showSection('read'); 
+  });
+  
+  // Content management
+  document.getElementById('addContentBtn').addEventListener('click', addContent);
+  document.getElementById('attachAudio').addEventListener('change', handleAttachAudio);
+  document.getElementById('toggleAudioBtn').addEventListener('click', toggleBackgroundMusic);
+  
+  // Info button
+  document.getElementById('fab').addEventListener('click', showInfo);
+  
+  // Admin features
+  document.getElementById('heartImage').addEventListener('click', () => { 
+    if(!currentUser || currentUser.role!=='admin') return; 
+    uploadHeart(); 
+  });
+  
+  document.getElementById('siteTitle').addEventListener('click', () => { 
+    if(!currentUser || currentUser.role!=='admin') return; 
+    document.getElementById('siteTitle').contentEditable=true; 
+    document.getElementById('siteTitle').focus(); 
+  });
+  
+  document.getElementById('subtitle').addEventListener('click', () => { 
+    if(!currentUser || currentUser.role!=='admin') return; 
+    document.getElementById('subtitle').contentEditable=true; 
+    document.getElementById('subtitle').focus(); 
+  });
+  
+  document.getElementById('subtitle').addEventListener('blur', () => { 
+    appData.settings.subtitle = document.getElementById('subtitle').textContent; 
+    save(); 
+  });
+  
+  document.getElementById('siteTitle').addEventListener('blur', () => { 
+    appData.settings.title = document.getElementById('siteTitle').textContent; 
+    document.title = document.getElementById('siteTitle').textContent; 
+    save(); 
+  });
+  
+  // New feature event listeners
+  document.getElementById('changeAdminPass').addEventListener('click', changeAdminPassword);
+  document.getElementById('changeReceiverPass').addEventListener('click', changeReceiverPassword);
+  document.getElementById('changeBgMusic').addEventListener('change', handleBgMusicChange);
+  document.getElementById('resetBgMusic').addEventListener('click', resetBgMusicToDefault);
+  
+  // Import/Export
+  document.getElementById('exportJson').addEventListener('click', exportData);
+  document.getElementById('importJson').addEventListener('click', importData);
+}
+
 // Password change functions
 function changeAdminPassword() {
   if (!currentUser || currentUser.role !== 'admin') {
     alert('Only admin can change passwords');
     return;
   }
-  const newPass = adminPassword.value.trim();
+  const newPass = document.getElementById('adminPassword').value.trim();
   if (!newPass) {
     alert('Enter new admin password');
     return;
   }
   appData.settings.credentials.adminPass = newPass;
-  adminPassword.value = '';
+  document.getElementById('adminPassword').value = '';
   appData.activity.push('Admin changed admin password at ' + new Date().toLocaleString());
   save();
   alert('Admin password changed successfully!');
@@ -259,13 +216,13 @@ function changeReceiverPassword() {
     alert('Only admin can change passwords');
     return;
   }
-  const newPass = receiverPassword.value.trim();
+  const newPass = document.getElementById('receiverPassword').value.trim();
   if (!newPass) {
     alert('Enter new receiver password');
     return;
   }
   appData.settings.credentials.receiverPass = newPass;
-  receiverPassword.value = '';
+  document.getElementById('receiverPassword').value = '';
   appData.activity.push('Admin changed receiver password at ' + new Date().toLocaleString());
   save();
   alert('Receiver password changed successfully!');
@@ -273,6 +230,7 @@ function changeReceiverPassword() {
 
 // Background music functions
 function toggleBackgroundMusic() {
+  const bgPlayer = document.getElementById('bgPlayer');
   if (bgPlayer.paused) {
     bgPlayer.play().then(() => {
       updateAudioButton();
@@ -286,7 +244,8 @@ function toggleBackgroundMusic() {
 }
 
 function updateAudioButton() {
-  toggleAudioBtn.textContent = bgPlayer.paused ? 'Play' : 'Pause';
+  const bgPlayer = document.getElementById('bgPlayer');
+  document.getElementById('toggleAudioBtn').textContent = bgPlayer.paused ? 'Play' : 'Pause';
 }
 
 function handleBgMusicChange(e) {
@@ -296,6 +255,7 @@ function handleBgMusicChange(e) {
   const reader = new FileReader();
   reader.onload = function(ev) {
     appData.settings.bgMusic = ev.target.result;
+    const bgPlayer = document.getElementById('bgPlayer');
     bgPlayer.src = ev.target.result;
     bgPlayer.play().then(() => {
       updateAudioButton();
@@ -311,6 +271,7 @@ function handleBgMusicChange(e) {
 
 function resetBgMusicToDefault() {
   appData.settings.bgMusic = 'lofi.mp3';
+  const bgPlayer = document.getElementById('bgPlayer');
   bgPlayer.src = 'lofi.mp3';
   bgPlayer.play().then(() => {
     updateAudioButton();
@@ -376,7 +337,7 @@ function uploadHeart(){
     const r=new FileReader(); 
     r.onload=(ev)=>{ 
       appData.settings.frontImage = ev.target.result; 
-      heartImage.src = ev.target.result; 
+      document.getElementById('heartImage').src = ev.target.result; 
       appData.activity.push('Admin updated heart image at '+new Date().toLocaleString()); 
       save(); 
     }; 
@@ -392,11 +353,11 @@ function addContent(){
     return; 
   }
   
-  const type = contentType.value;
-  const title = contentTitle.value.trim();
-  const content = contentText.value.trim();
-  const date = scheduleDate.value || null;
-  const time = scheduleTime.value || '09:00';
+  const type = document.getElementById('contentType').value;
+  const title = document.getElementById('contentTitle').value.trim();
+  const content = document.getElementById('contentText').value.trim();
+  const date = document.getElementById('scheduleDate').value || null;
+  const time = document.getElementById('scheduleTime').value || '09:00';
   
   if(!content){ 
     alert('Please write some content'); 
@@ -425,11 +386,11 @@ function addContent(){
   appData.settings.latestAudio = null;
   
   // Clear form
-  contentTitle.value=''; 
-  contentText.value=''; 
-  scheduleDate.value=''; 
-  scheduleTime.value='09:00'; 
-  attachAudio.value='';
+  document.getElementById('contentTitle').value=''; 
+  document.getElementById('contentText').value=''; 
+  document.getElementById('scheduleDate').value=''; 
+  document.getElementById('scheduleTime').value='09:00'; 
+  document.getElementById('attachAudio').value='';
   
   save();
   alert('Content uploaded successfully!');
@@ -450,33 +411,33 @@ function handleAttachAudio(e){
 // Render function
 function renderAll(){
   // Header texts
-  siteTitle.textContent = appData.settings.title;
-  subtitle.textContent = appData.settings.subtitle;
+  document.getElementById('siteTitle').textContent = appData.settings.title;
+  document.getElementById('subtitle').textContent = appData.settings.subtitle;
   document.title = appData.settings.title;
-  heartImage.src = appData.settings.frontImage || 'heart.jpg';
+  document.getElementById('heartImage').src = appData.settings.frontImage || 'heart.jpg';
 
   // Today content
   const today = new Date().toISOString().split('T')[0];
   let content = appData.messages.find(m=> m.scheduled === today && m.released) || appData.messages.filter(m=> m.released).slice(-1)[0];
   
   if(content){
-    todayContent.innerHTML = renderMessageCard(content);
+    document.getElementById('todayContent').innerHTML = renderMessageCard(content);
   } else {
-    todayContent.innerHTML = '<div class="muted-note">No content for today. Add some in the Admin Panel!</div>';
+    document.getElementById('todayContent').innerHTML = '<div class="muted-note">No content for today. Add some in the Admin Panel!</div>';
   }
 
   // Archive
   if(appData.messages.length>0){
-    archiveContent.innerHTML = appData.messages.slice().reverse().map(m=>
+    document.getElementById('archiveContent').innerHTML = appData.messages.slice().reverse().map(m=>
       '<div class="msg" data-id="'+m.id+'">'+renderMessageCard(m)+'</div>'
     ).join('');
   } else {
-    archiveContent.innerHTML = '<div class="muted-note">No content yet.</div>';
+    document.getElementById('archiveContent').innerHTML = '<div class="muted-note">No content yet.</div>';
   }
 
   // Admin content list
   if(appData.messages.length>0){
-    contentList.innerHTML = appData.messages.slice().reverse().map(m=>`
+    document.getElementById('contentList').innerHTML = appData.messages.slice().reverse().map(m=>`
       <div class="content-item">
         <div>
           <strong>${m.title||'(No title)'}</strong>
@@ -490,18 +451,18 @@ function renderAll(){
     `).join('');
     
     // Attach listeners for edit/delete
-    contentList.querySelectorAll('button[data-edit]').forEach(btn=> 
+    document.getElementById('contentList').querySelectorAll('button[data-edit]').forEach(btn=> 
       btn.onclick = ()=> editContent(Number(btn.dataset.edit))
     );
-    contentList.querySelectorAll('button[data-delete]').forEach(btn=> 
+    document.getElementById('contentList').querySelectorAll('button[data-delete]').forEach(btn=> 
       btn.onclick = ()=> deleteContent(Number(btn.dataset.delete))
     );
   } else {
-    contentList.innerHTML = '<div class="muted-note">No content scheduled yet.</div>';
+    document.getElementById('contentList').innerHTML = '<div class="muted-note">No content scheduled yet.</div>';
   }
 
   // Activity
-  activityLog.innerHTML = appData.activity.slice().reverse().map(a=>
+  document.getElementById('activityLog').innerHTML = appData.activity.slice().reverse().map(a=>
     '<div class="small">'+a+'</div>'
   ).join('');
 
@@ -867,15 +828,11 @@ function save(){
 }
 
 function showSection(name){
-  readView.classList.add('hidden'); 
-  archiveView.classList.add('hidden'); 
-  adminPanel.classList.add('hidden');
+  document.getElementById('readView').classList.add('hidden'); 
+  document.getElementById('archiveView').classList.add('hidden'); 
+  document.getElementById('adminPanel').classList.add('hidden');
   
-  if(name==='read') readView.classList.remove('hidden');
-  if(name==='archive') archiveView.classList.remove('hidden');
-  if(name==='admin') adminPanel.classList.remove('hidden');
+  if(name==='read') document.getElementById('readView').classList.remove('hidden');
+  if(name==='archive') document.getElementById('archiveView').classList.remove('hidden');
+  if(name==='admin') document.getElementById('adminPanel').classList.remove('hidden');
 }
-
-// Debug helpers
-window.__gift_save = save;
-window.__gift_data = appData;

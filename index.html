@@ -1,46 +1,52 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>For You 💖</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
-<!-- Login Page -->
-<div id="loginPage" class="page active">
-  <div class="login-box">
-    <h2>Welcome 💕</h2>
+  <!-- Login Page -->
+  <div id="loginPage" class="page active">
+    <div class="login-box">
+      <h2>Welcome 💕</h2>
 
-    <input type="text" id="username" placeholder="Enter Your Name" autocomplete="off">
+      <input type="text" id="username" placeholder="Enter Your Name" autocomplete="off" />
 
-    <div class="password-field">
-      <input type="password" id="password" placeholder="Secret Code">
-      <span id="togglePassword">👁</span>
+      <div class="password-field">
+        <input type="password" id="password" placeholder="Secret Code" />
+        <button id="togglePassword" aria-label="Toggle password">👁</button>
+      </div>
+
+      <button id="loginBtn">Enter</button>
+      <small class="error" id="loginError" aria-live="polite"></small>
     </div>
-
-    <button id="loginBtn">Enter</button>
-    <small class="error" id="loginError"></small>
   </div>
-</div>
 
-<!-- Gift Page -->
-<div id="giftPage" class="page">
-  <h2>Tap the Gift 🎁</h2>
-  <div id="giftBox">🎁</div>
-</div>
+  <!-- Gift Page -->
+  <div id="giftPage" class="page">
+    <h2>Tap the Gift 🎁</h2>
+    <div id="giftBox" role="button" tabindex="0" aria-label="Open gift">🎁</div>
+    <div class="muted-note">Tap the gift to open your message</div>
+  </div>
 
-<!-- Message Page -->
-<div id="messagePage" class="page">
-  <h2 id="greet"></h2>
-  <p id="messageText"></p>
-</div>
+  <!-- Message Page -->
+  <div id="messagePage" class="page">
+    <h2 id="greet"></h2>
+    <p id="messageText"></p>
+    <div style="margin-top:18px;">
+      <button id="backBtn" class="ghost">Back</button>
+      <button id="replayBtn" class="ghost">Replay Animation</button>
+    </div>
+  </div>
 
-<audio id="bgMusic" loop>
-  <source src="assets/lofi.mp3" type="audio/mpeg">
-</audio>
+  <!-- Audio (keep source in assets folder) -->
+  <audio id="bgMusic" loop preload="auto">
+    <source src="assets/lofi.mp3" type="audio/mpeg" />
+  </audio>
 
-<script src="script.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>

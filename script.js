@@ -1,108 +1,881 @@
-<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title id="pageTitle">Happy Birthday 💖</title>
-<link rel="stylesheet" href="style.css">
-</head>
-<body>
-<div id="loginModal" class="modal visible-opacity">
-  <div class="modal-box">
-    <h2>Login</h2>
-    <input id="loginName" placeholder="Your name" autocomplete="off">
-    <select id="loginRole">
-      <option value="receiver">Receiver</option>
-      <option value="admin">Admin</option>
-    </select>
-    <input id="loginPass" type="password" placeholder="Password">
-    <div class="row">
-      <button id="doLogin" class="btn primary">Login</button>
-      <button id="closeLogin" class="btn ghost">Close</button>
+// Final single-file app logic
+const STORAGE_KEY = 'gift_for_you_final_v4';
+let appData = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null') || {
+  settings: { 
+    title: 'Happy Birthday 💖', 
+    subtitle: 'Every day with you is a new chapter in my favorite story.', 
+    frontImage: 'heart.jpg', 
+    audioMode: 'none', 
+    audioData: null, 
+    bgMusic: 'lofi.mp3',
+    credentials: { 
+      adminUser: 'admin', 
+      adminPass: 'admin', 
+      receiverUser: 'receiver', 
+      receiverPass: 'receiver' 
+    } 
+  },
+  messages: [], 
+  nextId: 1, 
+  activity: [], 
+  reminders: []
+};
+let currentUser = null;
+let observer = null;
+
+// UI refs
+const loginModal = document.getElementById('loginModal');
+const appEl = document.getElementById('app');
+const doLoginBtn = document.getElementById('doLogin');
+const closeLoginBtn = document.getElementById('closeLogin');
+const loginName = document.getElementById('loginName');
+const loginPass = document.getElementById('loginPass');
+const loginRole = document.getElementById('loginRole');
+
+const siteTitle = document.getElementById('siteTitle');
+const subtitle = document.getElementById('subtitle');
+const heartImage = document.getElementById('heartImage');
+const userLabel = document.getElementById('userLabel');
+const toggleAudioBtn = document.getElementById('toggleAudioBtn');
+const logoutBtn = document.getElementById('logoutBtn');
+
+const openAdminPanelBtn = document.getElementById('openAdminPanel');
+const openArchiveBtn = document.getElementById('openArchive');
+const openReadBtn = document.getElementById('openRead');
+
+const readView = document.getElementById('readView');
+const archiveView = document.getElementById('archiveView');
+const adminPanel = document.getElementById('adminPanel');
+
+const todayContent = document.getElementById('todayContent');
+const archiveContent = document.getElementById('archiveContent');
+const contentList = document.getElementById('contentList');
+const activityLog = document.getElementById('activityLog');
+
+const addContentBtn = document.getElementById('addContentBtn');
+const contentType = document.getElementById('contentType');
+const contentTitle = document.getElementById('contentTitle');
+const contentText = document.getElementById('contentText');
+const scheduleDate = document.getElementById('scheduleDate');
+const scheduleTime = document.getElementById('scheduleTime');
+const attachAudio = document.getElementById('attachAudio');
+
+const bgPlayer = document.getElementById('bgPlayer');
+const fab = document.getElementById('fab');
+
+// New elements for features
+const changeAdminPassBtn = document.getElementById('changeAdminPass');
+const changeReceiverPassBtn = document.getElementById('changeReceiverPass');
+const adminPassword = document.getElementById('adminPassword');
+const receiverPassword = document.getElementById('receiverPassword');
+const changeBgMusic = document.getElementById('changeBgMusic');
+const resetBgMusic = document.getElementById('resetBgMusic');
+
+function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(appData)); renderAll(); }
+
+// Initialize UI - SIMPLE AND WORKING
+document.addEventListener('DOMContentLoaded', ()=>{
+  console.log('App loaded');
+  setupEvents();
+  renderAll();
+  
+  // Show login modal initially (app is hidden by default)
+  loginModal.classList.remove('hidden');
+  
+  // Auto-play background music after a delay
+  setTimeout(() => {
+    if (appData.settings.bgMusic) {
+      bgPlayer.src = appData.settings.bgMusic;
+      bgPlayer.play().catch(e => console.log('Auto-play prevented, user interaction required'));
+    }
+  }, 2000);
+  
+  setInterval(scheduledReleaseCheck, 30000);
+});
+
+function setupEvents(){
+  console.log('Setting up events');
+  
+  // Login events - SIMPLE AND DIRECT
+  doLoginBtn.addEventListener('click', doLogin);
+  closeLoginBtn.addEventListener('click', () => {
+    loginModal.classList.add('hidden');
+  });
+  
+  // Allow Enter key to login
+  loginPass.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+      doLogin();
+    }
+  });
+  
+  logoutBtn.addEventListener('click', () => { 
+    location.reload(); 
+  });
+  
+  openAdminPanelBtn.addEventListener('click', () => { 
+    showSection('admin'); 
+  });
+  openArchiveBtn.addEventListener('click', () => { 
+    showSection('archive'); 
+  });
+  openReadBtn.addEventListener('click', () => { 
+    showSection('read'); 
+  });
+  
+  addContentBtn.addEventListener('click', addContent);
+  attachAudio.addEventListener('change', handleAttachAudio);
+  toggleAudioBtn.addEventListener('click', toggleBackgroundMusic);
+  
+  fab.addEventListener('click', showInfo);
+  
+  heartImage.addEventListener('click', () => { 
+    if(!currentUser || currentUser.role!=='admin') return; 
+    uploadHeart(); 
+  });
+  
+  siteTitle.addEventListener('click', () => { 
+    if(!currentUser || currentUser.role!=='admin') return; 
+    siteTitle.contentEditable=true; 
+    siteTitle.focus(); 
+  });
+  
+  subtitle.addEventListener('click', () => { 
+    if(!currentUser || currentUser.role!=='admin') return; 
+    subtitle.contentEditable=true; 
+    subtitle.focus(); 
+  });
+  
+  subtitle.addEventListener('blur', () => { 
+    appData.settings.subtitle = subtitle.textContent; 
+    save(); 
+  });
+  
+  siteTitle.addEventListener('blur', () => { 
+    appData.settings.title = siteTitle.textContent; 
+    document.title = siteTitle.textContent; 
+    save(); 
+  });
+  
+  // New feature event listeners
+  changeAdminPassBtn.addEventListener('click', changeAdminPassword);
+  changeReceiverPassBtn.addEventListener('click', changeReceiverPassword);
+  changeBgMusic.addEventListener('change', handleBgMusicChange);
+  resetBgMusic.addEventListener('click', resetBgMusicToDefault);
+  
+  // Import/Export
+  document.getElementById('exportJson').addEventListener('click', exportData);
+  document.getElementById('importJson').addEventListener('click', importData);
+}
+
+// SIMPLE AND TESTED LOGIN FUNCTION
+function doLogin(){
+  console.log('Login button clicked');
+  
+  const name = loginName.value.trim();
+  const role = loginRole.value;
+  const pass = loginPass.value;
+  
+  console.log('Login attempt:', { name, role, pass });
+  
+  // Basic validation
+  if(!name){ 
+    alert('Please enter your name'); 
+    return; 
+  }
+  
+  if(!pass){ 
+    alert('Please enter password'); 
+    return; 
+  }
+  
+  let isValid = false;
+  
+  if(role === 'admin'){
+    isValid = (pass === appData.settings.credentials.adminPass);
+    if(!isValid) {
+      alert('Wrong admin password');
+      return;
+    }
+  } else {
+    isValid = (pass === appData.settings.credentials.receiverPass);
+    if(!isValid) {
+      alert('Wrong receiver password');
+      return;
+    }
+  }
+  
+  // Login successful
+  console.log('Login successful');
+  currentUser = { name, role };
+  userLabel.textContent = name + ' (' + role + ')';
+  
+  // Add to activity log
+  appData.activity.push(name + ' logged in as ' + role + ' at ' + new Date().toLocaleString());
+  save();
+  
+  // Hide login and show app - SIMPLE APPROACH
+  loginModal.classList.add('hidden');
+  appEl.classList.remove('hidden');
+  
+  // Show appropriate UI based on role
+  if(role === 'admin'){
+    openAdminPanelBtn.classList.remove('hidden');
+  }
+  logoutBtn.classList.remove('hidden');
+  toggleAudioBtn.classList.remove('hidden');
+  
+  startObserver();
+  
+  // Confetti effect
+  showConfetti();
+  
+  // Update audio button
+  updateAudioButton();
+  
+  console.log('Login process completed');
+}
+
+// Password change functions
+function changeAdminPassword() {
+  if (!currentUser || currentUser.role !== 'admin') {
+    alert('Only admin can change passwords');
+    return;
+  }
+  const newPass = adminPassword.value.trim();
+  if (!newPass) {
+    alert('Enter new admin password');
+    return;
+  }
+  appData.settings.credentials.adminPass = newPass;
+  adminPassword.value = '';
+  appData.activity.push('Admin changed admin password at ' + new Date().toLocaleString());
+  save();
+  alert('Admin password changed successfully!');
+}
+
+function changeReceiverPassword() {
+  if (!currentUser || currentUser.role !== 'admin') {
+    alert('Only admin can change passwords');
+    return;
+  }
+  const newPass = receiverPassword.value.trim();
+  if (!newPass) {
+    alert('Enter new receiver password');
+    return;
+  }
+  appData.settings.credentials.receiverPass = newPass;
+  receiverPassword.value = '';
+  appData.activity.push('Admin changed receiver password at ' + new Date().toLocaleString());
+  save();
+  alert('Receiver password changed successfully!');
+}
+
+// Background music functions
+function toggleBackgroundMusic() {
+  if (bgPlayer.paused) {
+    bgPlayer.play().then(() => {
+      updateAudioButton();
+    }).catch(e => {
+      console.log('Play failed:', e);
+    });
+  } else {
+    bgPlayer.pause();
+    updateAudioButton();
+  }
+}
+
+function updateAudioButton() {
+  toggleAudioBtn.textContent = bgPlayer.paused ? 'Play' : 'Pause';
+}
+
+function handleBgMusicChange(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    appData.settings.bgMusic = ev.target.result;
+    bgPlayer.src = ev.target.result;
+    bgPlayer.play().then(() => {
+      updateAudioButton();
+      appData.activity.push((currentUser?.name || 'User') + ' changed background music at ' + new Date().toLocaleString());
+      save();
+      alert('Background music updated!');
+    }).catch(err => {
+      console.log('Play failed:', err);
+    });
+  };
+  reader.readAsDataURL(file);
+}
+
+function resetBgMusicToDefault() {
+  appData.settings.bgMusic = 'lofi.mp3';
+  bgPlayer.src = 'lofi.mp3';
+  bgPlayer.play().then(() => {
+    updateAudioButton();
+    appData.activity.push((currentUser?.name || 'User') + ' reset background music to default at ' + new Date().toLocaleString());
+    save();
+    alert('Background music reset to default!');
+  }).catch(err => {
+    console.log('Default music play failed:', err);
+  });
+}
+
+// Info button
+function showInfo() {
+  const info = `
+App Features:
+• Login as Admin or Receiver
+• Admin can send scheduled messages/poems
+• Receiver can view messages and add comments
+• Both can set reminders for messages
+• Change background music (supports lofi.mp3)
+• Admin can change passwords
+• Edit comments (Receiver can edit their own comments)
+• Auto-play background music
+• Beautiful responsive design
+
+Tips:
+- Admin: Click heart to change image, click text to edit
+- Receiver: Add comments under "Aap kuch kehna chahenge"
+- Use reminders to remember important messages
+- Export/Import data in Admin panel
+
+Default Passwords:
+Admin: admin/admin
+Receiver: receiver/receiver
+  `;
+  alert(info);
+}
+
+// Confetti effect
+function showConfetti(){ 
+  const wrap = document.createElement('div'); 
+  wrap.className='confetti-wrap'; 
+  for(let i=0;i<18;i++){ 
+    const d=document.createElement('div'); 
+    d.className='confetti'; 
+    d.style.left=(Math.random()*90)+'%'; 
+    d.style.animationDelay=(Math.random()*900)+'ms'; 
+    d.textContent='❤'; 
+    wrap.appendChild(d); 
+  } 
+  document.body.appendChild(wrap); 
+  setTimeout(()=>wrap.remove(),2200); 
+}
+
+// Upload heart image
+function uploadHeart(){ 
+  const ip=document.createElement('input'); 
+  ip.type='file'; 
+  ip.accept='image/*'; 
+  ip.onchange=(e)=>{ 
+    const f=e.target.files[0]; 
+    if(!f) return; 
+    const r=new FileReader(); 
+    r.onload=(ev)=>{ 
+      appData.settings.frontImage = ev.target.result; 
+      heartImage.src = ev.target.result; 
+      appData.activity.push('Admin updated heart image at '+new Date().toLocaleString()); 
+      save(); 
+    }; 
+    r.readAsDataURL(f); 
+  }; 
+  ip.click(); 
+}
+
+// Add content
+function addContent(){
+  if(!currentUser || currentUser.role!=='admin'){ 
+    alert('Only admin can add content'); 
+    return; 
+  }
+  
+  const type = contentType.value;
+  const title = contentTitle.value.trim();
+  const content = contentText.value.trim();
+  const date = scheduleDate.value || null;
+  const time = scheduleTime.value || '09:00';
+  
+  if(!content){ 
+    alert('Please write some content'); 
+    return; 
+  }
+  
+  const newMsg = { 
+    id: appData.nextId++, 
+    type, 
+    title, 
+    content, 
+    dateAdded: new Date().toISOString(), 
+    scheduled: date, 
+    scheduledTime: time, 
+    released: date?false:true, 
+    postedOn: date?null:new Date().toISOString(), 
+    comments: [], 
+    audio: appData.settings.latestAudio || null, 
+    preEdits: [] 
+  };
+  
+  appData.messages.push(newMsg);
+  appData.activity.push('Admin added "'+(title||'untitled')+'" at '+new Date().toLocaleString());
+  
+  // Clear audio after attaching to message
+  appData.settings.latestAudio = null;
+  
+  // Clear form
+  contentTitle.value=''; 
+  contentText.value=''; 
+  scheduleDate.value=''; 
+  scheduleTime.value='09:00'; 
+  attachAudio.value='';
+  
+  save();
+  alert('Content uploaded successfully!');
+}
+
+// Attach audio to form
+function handleAttachAudio(e){
+  const f = e.target.files[0];
+  if(!f) return;
+  const r = new FileReader();
+  r.onload = ()=>{ 
+    appData.settings.latestAudio = r.result; 
+    alert('Audio ready — click Upload Content to attach it to the message.'); 
+  };
+  r.readAsDataURL(f);
+}
+
+// Render function
+function renderAll(){
+  // Header texts
+  siteTitle.textContent = appData.settings.title;
+  subtitle.textContent = appData.settings.subtitle;
+  document.title = appData.settings.title;
+  heartImage.src = appData.settings.frontImage || 'heart.jpg';
+
+  // Today content
+  const today = new Date().toISOString().split('T')[0];
+  let content = appData.messages.find(m=> m.scheduled === today && m.released) || appData.messages.filter(m=> m.released).slice(-1)[0];
+  
+  if(content){
+    todayContent.innerHTML = renderMessageCard(content);
+  } else {
+    todayContent.innerHTML = '<div class="muted-note">No content for today. Add some in the Admin Panel!</div>';
+  }
+
+  // Archive
+  if(appData.messages.length>0){
+    archiveContent.innerHTML = appData.messages.slice().reverse().map(m=>
+      '<div class="msg" data-id="'+m.id+'">'+renderMessageCard(m)+'</div>'
+    ).join('');
+  } else {
+    archiveContent.innerHTML = '<div class="muted-note">No content yet.</div>';
+  }
+
+  // Admin content list
+  if(appData.messages.length>0){
+    contentList.innerHTML = appData.messages.slice().reverse().map(m=>`
+      <div class="content-item">
+        <div>
+          <strong>${m.title||'(No title)'}</strong>
+          <div class="small">${m.type} • ${new Date(m.dateAdded).toLocaleDateString()}</div>
+        </div>
+        <div style="display:flex;gap:6px">
+          <button class="ghost" data-edit="${m.id}">Edit</button>
+          <button class="ghost" data-delete="${m.id}">Delete</button>
+        </div>
+      </div>
+    `).join('');
+    
+    // Attach listeners for edit/delete
+    contentList.querySelectorAll('button[data-edit]').forEach(btn=> 
+      btn.onclick = ()=> editContent(Number(btn.dataset.edit))
+    );
+    contentList.querySelectorAll('button[data-delete]').forEach(btn=> 
+      btn.onclick = ()=> deleteContent(Number(btn.dataset.delete))
+    );
+  } else {
+    contentList.innerHTML = '<div class="muted-note">No content scheduled yet.</div>';
+  }
+
+  // Activity
+  activityLog.innerHTML = appData.activity.slice().reverse().map(a=>
+    '<div class="small">'+a+'</div>'
+  ).join('');
+
+  saveLocalOnly();
+  updateAudioButton();
+}
+
+function renderMessageCard(m){
+  return renderMessageHTML(m) + renderMessageControls(m);
+}
+
+function renderMessageHTML(m){
+  return `
+    <div class="meta">
+      <strong>${m.title||'(No title)'}</strong> • ${new Date(m.dateAdded).toLocaleString()}
     </div>
-  </div>
-</div>
+    <div style="white-space:pre-line">${escapeHtml(m.content)}</div>
+    ${m.audio ? <div class="audio-section"><audio controls src="${m.audio}"></audio></div> : ''}
+  `;
+}
 
-<div id="app" class="app hidden-opacity">
-  <header class="header">
-    <div class="left">
-      <img id="heartImage" src="heart.jpg" class="heart" alt="heart" />
-      <div class="titles">
-        <h1 id="siteTitle" contenteditable="false">Happy Birthday 💖</h1>
-        <div id="subtitle" class="subtitle" contenteditable="false">Every day with you is a new chapter in my favorite story.</div>
+function renderMessageControls(m){
+  let html = '<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">';
+  html += <button class="ghost" data-comment="${m.id}">Aap kuch kehna chahenge?</button>;
+  
+  if(currentUser && currentUser.role==='admin'){ 
+    html += <button class="ghost" data-editmsg="${m.id}">Edit</button>; 
+    html += <button class="ghost" data-addaudio="${m.id}">Add Audio</button>; 
+    html += <button class="ghost" data-reminder="${m.id}">Add Reminder</button>; 
+  }
+  
+  if(currentUser && currentUser.role!=='admin'){ 
+    html += <button class="ghost" data-setrem="${m.id}">Set Reminder</button>; 
+  }
+  
+  html += '</div>';
+  html += <div class="comments-area" id="comments-${m.id}"></div>;
+  return html;
+}
+
+function escapeHtml(s){ 
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); 
+}
+
+// Edit content
+function editContent(id){ 
+  const m = appData.messages.find(x=>x.id===id); 
+  if(!m) return; 
+  const nc = prompt('Edit message content', m.content); 
+  if(nc!==null){ 
+    m.preEdits = m.preEdits || []; 
+    m.preEdits.push({when:new Date().toISOString(), text: m.content}); 
+    m.content = nc; 
+    appData.activity.push('Admin edited "'+(m.title||'')+'" at '+new Date().toLocaleString()); 
+    save(); 
+  } 
+}
+
+function deleteContent(id){ 
+  if(!confirm('Are you sure you want to delete this message?')) return; 
+  appData.messages = appData.messages.filter(x=> x.id!==id); 
+  appData.activity.push('Admin deleted a message at '+new Date().toLocaleDateString()); 
+  save(); 
+}
+
+// Comments handling
+document.addEventListener('click', function(e){
+  const com = e.target.closest('button[data-comment]');
+  if(com){ 
+    const id = Number(com.dataset.comment); 
+    toggleComments(id); 
+    return; 
+  }
+  
+  const addc = e.target.closest('button[data-addcomment]');
+  if(addc){ 
+    const id = Number(addc.dataset.addcomment); 
+    addComment(id); 
+    return; 
+  }
+  
+  const editbtn = e.target.closest('button[data-editmsg]');
+  if(editbtn){ 
+    editContent(Number(editbtn.dataset.editmsg)); 
+    return; 
+  }
+  
+  const addAudioBtn = e.target.closest('button[data-addaudio]');
+  if(addAudioBtn){ 
+    addAudioToMessage(Number(addAudioBtn.dataset.addaudio)); 
+    return; 
+  }
+  
+  const setRem = e.target.closest('button[data-setrem]');
+  if(setRem){ 
+    setReminderForUser(Number(setRem.dataset.setrem)); 
+    return; 
+  }
+  
+  const remind = e.target.closest('button[data-reminder]');
+  if(remind){ 
+    addReminderAdmin(Number(remind.dataset.reminder)); 
+    return; 
+  }
+  
+  const editCommentBtn = e.target.closest('button[data-editcomment]');
+  if(editCommentBtn){ 
+    const msgId = Number(editCommentBtn.dataset.msgid);
+    const commentId = Number(editCommentBtn.dataset.commentid);
+    editComment(msgId, commentId); 
+    return; 
+  }
+});
+
+function toggleComments(id){
+  const area = document.getElementById('comments-'+id);
+  if(!area) return;
+  
+  if(area.innerHTML.trim()!==''){ 
+    area.innerHTML=''; 
+    return; 
+  }
+  
+  const m = appData.messages.find(x=>x.id===id);
+  if(!m) return;
+  
+  // Show comments
+  let commentsHTML = '';
+  if (m.comments && m.comments.length > 0) {
+    commentsHTML = m.comments.map(c => `
+      <div class="comment">
+        <div class="small">${c.by} • ${new Date(c.when).toLocaleString()}</div>
+        <div>${escapeHtml(c.text)}</div>
+        ${(currentUser && currentUser.name === c.by) ? 
+          <button class="ghost" data-editcomment data-msgid="${m.id}" data-commentid="${c.id}">Edit</button> : ''}
       </div>
-    </div>
-    <div class="right">
-      <div id="userLabel" class="muted-note">Not logged in</div>
-      <button id="toggleAudioBtn" class="btn ghost hidden">Play</button>
-      <button id="logoutBtn" class="btn ghost hidden">Logout</button>
-    </div>
-  </header>
-
-  <main class="container">
-    <section class="controls">
-      <button id="openAdminPanel" class="btn ghost hidden">Admin Panel</button>
-      <button id="openArchive" class="btn ghost">All Messages</button>
-      <button id="openRead" class="btn ghost">Read Content</button>
-      <div class="muted-note">Tip: Tap the heart (admin) to change photo. Tap any editable text to edit (admin).</div>
-    </section>
-
-    <section id="readView" class="panel">
-      <h2>Today's Message</h2>
-      <div id="todayContent"></div>
-    </section>
-
-    <section id="archiveView" class="panel hidden">
-      <h2>All Messages & Poems</h2>
-      <div id="archiveContent"></div>
-    </section>
-
-    <section id="adminPanel" class="panel hidden">
-      <h2>Admin Panel</h2>
-      <div class="form-row">
-        <label>Type</label>
-        <select id="contentType"><option value="message">Message</option><option value="poem">Poem</option></select>
+    `).join('');
+  } else {
+    commentsHTML = '<div class="muted-note">No comments yet.</div>';
+  }
+  
+  // Add comment form
+  if(currentUser){
+    commentsHTML += `
+      <div style="margin-top: 10px;">
+        <textarea id="commentText-${m.id}" placeholder="Type your comment here..." style="width:100%; padding:8px; border-radius:8px; border:1px solid #eee;"></textarea>
+        <button class="btn ghost" data-addcomment="${m.id}" style="margin-top:5px;">Add Comment</button>
       </div>
-      <div class="form-row"><label>Title</label><input id="contentTitle"></div>
-      <div class="form-row"><label>Content</label><textarea id="contentText"></textarea></div>
-      <div class="form-row"><label>Schedule date</label><input id="scheduleDate" type="date"></div>
-      <div class="form-row"><label>Schedule time</label><input id="scheduleTime" type="time" value="09:00"></div>
-      <div class="form-row"><label>Attach audio (optional)</label><input id="attachAudio" type="file" accept="audio/*"></div>
-      <div class="row">
-        <button id="addContentBtn" class="btn primary">Upload Content</button>
-        <button id="exportJson" class="btn ghost">Export JSON</button>
-        <button id="importJson" class="btn ghost">Import JSON</button>
-      </div>
-      
-      <!-- NEW FEATURES ADDED HERE -->
-      <h3>Change Passwords</h3>
-      <div class="form-row">
-        <input type="password" id="adminPassword" placeholder="New admin password">
-        <button id="changeAdminPass" class="btn ghost">Change Admin Pass</button>
-      </div>
-      <div class="form-row">
-        <input type="password" id="receiverPassword" placeholder="New receiver password">
-        <button id="changeReceiverPass" class="btn ghost">Change Receiver Pass</button>
-      </div>
-      
-      <h3>Background Music</h3>
-      <div class="form-row">
-        <input type="file" id="changeBgMusic" accept="audio/*">
-        <button id="resetBgMusic" class="btn ghost">Reset to Default</button>
-      </div>
-      <!-- END NEW FEATURES -->
-      
-      <h3>Manage Content</h3>
-      <div id="contentList"></div>
-      <h3>Activity Log</h3>
-      <div id="activityLog" class="activity"></div>
-    </section>
-  </main>
+    `;
+  }
+  
+  area.innerHTML = commentsHTML;
+}
 
-  <button id="fab" class="fab">+</button>
-  <audio id="bgPlayer" loop></audio>
-</div>
+function addComment(id){
+  const m = appData.messages.find(x=>x.id===id);
+  if(!m || !currentUser) return;
+  
+  const commentText = document.getElementById('commentText-'+id)?.value.trim();
+  if(!commentText){ 
+    alert('Please write a comment'); 
+    return; 
+  }
+  
+  const comment = { 
+    id: Date.now(), 
+    by: currentUser.name, 
+    when: new Date().toISOString(), 
+    text: commentText, 
+    history: [] 
+  };
+  
+  m.comments = m.comments || [];
+  m.comments.push(comment);
+  appData.activity.push(currentUser.name + ' commented at ' + new Date().toLocaleString());
+  save();
+  
+  // Clear textarea and refresh comments
+  document.getElementById('commentText-'+id).value = '';
+  toggleComments(id); // Refresh to show new comment
+}
 
-<script src="script.js"></script>
-</body>
-</html>
+function editComment(msgId, commentId){
+  const m = appData.messages.find(x=>x.id===msgId);
+  if(!m || !m.comments) return;
+  
+  const comment = m.comments.find(c=>c.id===commentId);
+  if(!comment) return;
+  
+  if(currentUser && currentUser.name !== comment.by){
+    alert('You can only edit your own comments');
+    return;
+  }
+  
+  const newText = prompt('Edit your comment', comment.text);
+  if(newText !== null){
+    comment.history = comment.history || [];
+    comment.history.push({
+      when: new Date().toISOString(),
+      text: comment.text
+    });
+    comment.text = newText;
+    comment.editedAt = new Date().toISOString();
+    appData.activity.push(currentUser.name + ' edited a comment at ' + new Date().toLocaleString());
+    save();
+    toggleComments(msgId); // Refresh comments
+  }
+}
+
+// Add audio to message
+function addAudioToMessage(id){
+  if(!currentUser || currentUser.role!=='admin'){ 
+    alert('Only admin can add audio'); 
+    return; 
+  }
+  
+  const ip = document.createElement('input'); 
+  ip.type='file'; 
+  ip.accept='audio/*'; 
+  ip.onchange=(e)=>{ 
+    const f=e.target.files[0]; 
+    if(!f) return; 
+    const r = new FileReader(); 
+    r.onload = (ev)=>{ 
+      const m = appData.messages.find(x=>x.id===id); 
+      m.audio = ev.target.result; 
+      appData.activity.push('Admin added audio to message "'+(m.title||'')+'" at '+new Date().toLocaleString()); 
+      save(); 
+    }; 
+    r.readAsDataURL(f); 
+  }; 
+  ip.click();
+}
+
+// Reminders
+function addReminderAdmin(id){ 
+  const when = prompt('Reminder date-time (YYYY-MM-DD HH:MM)'); 
+  if(!when) return; 
+  
+  const title = prompt('Reminder title', appData.messages.find(m=>m.id===id).title||'Reminder'); 
+  try{ 
+    const iso = new Date(when.replace(' ','T')).toISOString(); 
+    appData.reminders.push({ 
+      id: appData.nextId++, 
+      title: title||'Reminder', 
+      when: iso, 
+      messageId: id, 
+      by: currentUser.name 
+    }); 
+    appData.activity.push('Admin added reminder at '+new Date().toLocaleString()); 
+    save(); 
+    alert('Reminder set successfully!');
+  }catch(e){ 
+    alert('Invalid date format. Please use YYYY-MM-DD HH:MM'); 
+  } 
+}
+
+function setReminderForUser(id){ 
+  if(!currentUser){ 
+    alert('Please login to set reminder'); 
+    return; 
+  } 
+  
+  const when = prompt('Reminder date-time (YYYY-MM-DD HH:MM)'); 
+  if(!when) return; 
+  
+  const title = prompt('Reminder title', appData.messages.find(m=>m.id===id).title||'Reminder'); 
+  try{ 
+    const iso = new Date(when.replace(' ','T')).toISOString(); 
+    appData.reminders.push({ 
+      id: appData.nextId++, 
+      title: title||'Reminder', 
+      when: iso, 
+      messageId: id, 
+      by: currentUser.name 
+    }); 
+    appData.activity.push(currentUser.name + ' set a reminder at '+new Date().toLocaleString()); 
+    save(); 
+    alert('Reminder set successfully!');
+  }catch(e){ 
+    alert('Invalid date format. Please use YYYY-MM-DD HH:MM'); 
+  } 
+}
+
+// Scheduled release check
+function scheduledReleaseCheck(){
+  const now = new Date();
+  let changed=false;
+  appData.messages.forEach(m=>{
+    if(m.released) return;
+    if(!m.scheduled) return;
+    const when = new Date(m.scheduled + 'T' + (m.scheduledTime || '09:00'));
+    if(when <= now){ 
+      m.released = true; 
+      m.postedOn = new Date().toISOString(); 
+      appData.activity.push('Message "'+(m.title||'')+'" released at '+new Date().toLocaleString()); 
+      changed=true; 
+    }
+  });
+  if(changed) save();
+}
+
+// Observer for seen-tracking
+function startObserver(){
+  if(observer) observer.disconnect();
+  observer = new IntersectionObserver(entries=>{ 
+    entries.forEach(ent=>{ 
+      if(ent.isIntersecting){ 
+        const id = Number(ent.target.dataset.id); 
+        const m = appData.messages.find(x=>x.id===id); 
+        if(m && !m.seenAt && currentUser && currentUser.role==='receiver'){ 
+          m.seenAt = new Date().toISOString(); 
+          appData.activity.push('Message "'+(m.title||'')+'" seen by '+currentUser.name+' at '+new Date().toLocaleString()); 
+          save(); 
+          if(navigator.vibrate) navigator.vibrate(40); 
+        } 
+      } 
+    }); 
+  },{threshold:0.6});
+  document.querySelectorAll('.msg').forEach(n=> observer.observe(n));
+}
+
+// Import/Export
+function exportData(){
+  const blob = new Blob([JSON.stringify(appData,null,2)],{type:'application/json'});
+  const a = document.createElement('a'); 
+  a.href = URL.createObjectURL(blob); 
+  a.download = 'gift_backup.json'; 
+  a.click();
+}
+
+function importData(){
+  const ip = document.createElement('input'); 
+  ip.type='file'; 
+  ip.accept='application/json'; 
+  ip.onchange=(e)=>{ 
+    const f=e.target.files[0]; 
+    if(!f) return; 
+    const r=new FileReader(); 
+    r.onload=(ev)=>{ 
+      try{ 
+        const obj = JSON.parse(ev.target.result); 
+        appData = obj; 
+        save(); 
+        alert('Imported successfully!'); 
+        location.reload();
+      }catch(err){ 
+        alert('Invalid JSON file'); 
+      } 
+    }; 
+    r.readAsText(f); 
+  }; 
+  ip.click();
+}
+
+function saveLocalOnly(){ 
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(appData)); 
+}
+
+function save(){ 
+  saveLocalOnly(); 
+  renderAll(); 
+}
+
+function showSection(name){
+  readView.classList.add('hidden'); 
+  archiveView.classList.add('hidden'); 
+  adminPanel.classList.add('hidden');
+  
+  if(name==='read') readView.classList.remove('hidden');
+  if(name==='archive') archiveView.classList.remove('hidden');
+  if(name==='admin') adminPanel.classList.remove('hidden');
+}
+
+// Debug helpers
+window.__gift_save = save;
+window.__gift_data = appData;

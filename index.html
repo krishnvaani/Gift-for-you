@@ -7,8 +7,11 @@
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<div id="loginModal" class="modal visible-opacity">
+<div id="loginModal" class="modal">
   <div class="modal-box">
+    <div class="login-heart">
+      <img src="heart.jpg" alt="heart" class="heart-large">
+    </div>
     <h2>Login</h2>
     <input id="loginName" placeholder="Your name" autocomplete="off">
     <select id="loginRole">
@@ -23,7 +26,7 @@
   </div>
 </div>
 
-<div id="app" class="app hidden-opacity">
+<div id="app" class="hidden">
   <header class="header">
     <div class="left">
       <img id="heartImage" src="heart.jpg" class="heart" alt="heart" />
@@ -74,7 +77,6 @@
         <button id="importJson" class="btn ghost">Import JSON</button>
       </div>
       
-      <!-- NEW FEATURES ADDED HERE -->
       <h3>Change Passwords</h3>
       <div class="form-row">
         <input type="password" id="adminPassword" placeholder="New admin password">
@@ -90,7 +92,6 @@
         <input type="file" id="changeBgMusic" accept="audio/*">
         <button id="resetBgMusic" class="btn ghost">Reset to Default</button>
       </div>
-      <!-- END NEW FEATURES -->
       
       <h3>Manage Content</h3>
       <div id="contentList"></div>

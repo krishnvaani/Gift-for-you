@@ -1,108 +1,45 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title id="pageTitle">Happy Birthday 💖</title>
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>For You 💖</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-<div id="loginModal" class="modal">
-  <div class="modal-box">
-    <div class="login-heart">
-      <img src="heart.jpg" alt="heart" class="heart-large">
+
+<!-- Login Page -->
+<div id="loginPage" class="page active">
+  <div class="login-box">
+    <h2>Welcome 💕</h2>
+
+    <input type="text" id="username" placeholder="Enter Your Name" autocomplete="off">
+
+    <div class="password-field">
+      <input type="password" id="password" placeholder="Secret Code">
+      <span id="togglePassword">👁</span>
     </div>
-    <h2>Login</h2>
-    <input id="loginName" placeholder="Your name" autocomplete="off">
-    <select id="loginRole">
-      <option value="receiver">Receiver</option>
-      <option value="admin">Admin</option>
-    </select>
-    <input id="loginPass" type="password" placeholder="Password">
-    <div class="row">
-      <button id="doLogin" class="btn primary">Login</button>
-      <button id="closeLogin" class="btn ghost">Close</button>
-    </div>
+
+    <button id="loginBtn">Enter</button>
+    <small class="error" id="loginError"></small>
   </div>
 </div>
 
-<div id="app" class="hidden">
-  <header class="header">
-    <div class="left">
-      <img id="heartImage" src="heart.jpg" class="heart" alt="heart" />
-      <div class="titles">
-        <h1 id="siteTitle" contenteditable="false">Happy Birthday 💖</h1>
-        <div id="subtitle" class="subtitle" contenteditable="false">Every day with you is a new chapter in my favorite story.</div>
-      </div>
-    </div>
-    <div class="right">
-      <div id="userLabel" class="muted-note">Not logged in</div>
-      <button id="toggleAudioBtn" class="btn ghost hidden">Play</button>
-      <button id="logoutBtn" class="btn ghost hidden">Logout</button>
-    </div>
-  </header>
-
-  <main class="container">
-    <section class="controls">
-      <button id="openAdminPanel" class="btn ghost hidden">Admin Panel</button>
-      <button id="openArchive" class="btn ghost">All Messages</button>
-      <button id="openRead" class="btn ghost">Read Content</button>
-      <div class="muted-note">Tip: Tap the heart (admin) to change photo. Tap any editable text to edit (admin).</div>
-    </section>
-
-    <section id="readView" class="panel">
-      <h2>Today's Message</h2>
-      <div id="todayContent"></div>
-    </section>
-
-    <section id="archiveView" class="panel hidden">
-      <h2>All Messages & Poems</h2>
-      <div id="archiveContent"></div>
-    </section>
-
-    <section id="adminPanel" class="panel hidden">
-      <h2>Admin Panel</h2>
-      <div class="form-row">
-        <label>Type</label>
-        <select id="contentType"><option value="message">Message</option><option value="poem">Poem</option></select>
-      </div>
-      <div class="form-row"><label>Title</label><input id="contentTitle"></div>
-      <div class="form-row"><label>Content</label><textarea id="contentText"></textarea></div>
-      <div class="form-row"><label>Schedule date</label><input id="scheduleDate" type="date"></div>
-      <div class="form-row"><label>Schedule time</label><input id="scheduleTime" type="time" value="09:00"></div>
-      <div class="form-row"><label>Attach audio (optional)</label><input id="attachAudio" type="file" accept="audio/*"></div>
-      <div class="row">
-        <button id="addContentBtn" class="btn primary">Upload Content</button>
-        <button id="exportJson" class="btn ghost">Export JSON</button>
-        <button id="importJson" class="btn ghost">Import JSON</button>
-      </div>
-      
-      <h3>Change Passwords</h3>
-      <div class="form-row">
-        <input type="password" id="adminPassword" placeholder="New admin password">
-        <button id="changeAdminPass" class="btn ghost">Change Admin Pass</button>
-      </div>
-      <div class="form-row">
-        <input type="password" id="receiverPassword" placeholder="New receiver password">
-        <button id="changeReceiverPass" class="btn ghost">Change Receiver Pass</button>
-      </div>
-      
-      <h3>Background Music</h3>
-      <div class="form-row">
-        <input type="file" id="changeBgMusic" accept="audio/*">
-        <button id="resetBgMusic" class="btn ghost">Reset to Default</button>
-      </div>
-      
-      <h3>Manage Content</h3>
-      <div id="contentList"></div>
-      <h3>Activity Log</h3>
-      <div id="activityLog" class="activity"></div>
-    </section>
-  </main>
-
-  <button id="fab" class="fab">+</button>
-  <audio id="bgPlayer" loop></audio>
+<!-- Gift Page -->
+<div id="giftPage" class="page">
+  <h2>Tap the Gift 🎁</h2>
+  <div id="giftBox">🎁</div>
 </div>
+
+<!-- Message Page -->
+<div id="messagePage" class="page">
+  <h2 id="greet"></h2>
+  <p id="messageText"></p>
+</div>
+
+<audio id="bgMusic" loop>
+  <source src="assets/lofi.mp3" type="audio/mpeg">
+</audio>
 
 <script src="script.js"></script>
 </body>

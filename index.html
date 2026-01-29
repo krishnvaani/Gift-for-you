@@ -432,7 +432,7 @@
             </section>
 
             <!-- Admin Tab -->
-            <section id="adminPanel" class="panel hidden">
+            <section id="adminPanel" class="panel">
                 <h2 style="color: var(--pink); margin-top: 0;">Admin Panel ⚙️</h2>
                 
                 <!-- Password Management -->
@@ -583,10 +583,10 @@
 
     <script>
         // ============================================
-        // GIFT APP - SIMPLIFIED FIXED VERSION
+        // GIFT APP - SIMPLIFIED WORKING VERSION
         // ============================================
         
-        const STORAGE_KEY = 'gift_app_auto_sync_fixed';
+        const STORAGE_KEY = 'gift_app_final';
         const SYNC_CONFIG_KEY = 'gift_sync_config';
         
         const DEFAULT_DATA = {
@@ -613,56 +613,42 @@
             syncCode: null,
             connectedTo: null,
             lastSync: null,
-            autoSyncInterval: 2,
-            devices: []
+            autoSyncInterval: 2
         };
         
         let autoSyncInterval = null;
         let lastMessageCount = appData.messages.length;
 
         // ============================================
-        // INITIALIZATION - SIMPLIFIED
+        // INITIALIZATION
         // ============================================
 
         document.addEventListener('DOMContentLoaded', function() {
             console.log('App loading...');
             
-            // Setup tab switching - SIMPLIFIED
             setupTabs();
-            
-            // Setup event listeners
             setupEventListeners();
-            
-            // Initial render
             renderAll();
             
-            // Start auto-sync if connected
             if (syncConfig.connectedTo || syncConfig.syncCode) {
                 startAutoSync();
             }
             
-            // Check for scheduled releases
             setInterval(checkScheduledReleases, 60000);
-            
-            console.log('App loaded successfully');
         });
 
         function setupTabs() {
             const tabs = document.querySelectorAll('.tab-button');
             tabs.forEach(tab => {
                 tab.addEventListener('click', function() {
-                    // Remove active class from all tabs
                     tabs.forEach(t => t.classList.remove('active'));
-                    // Add active class to clicked tab
                     this.classList.add('active');
                     
-                    // Hide all panels
                     document.getElementById('readView').classList.add('hidden');
                     document.getElementById('archiveView').classList.add('hidden');
                     document.getElementById('adminPanel').classList.add('hidden');
                     document.getElementById('syncView').classList.add('hidden');
                     
-                    // Show selected panel
                     const tabName = this.getAttribute('data-tab');
                     document.getElementById(tabName + 'View').classList.remove('hidden');
                 });
@@ -670,21 +656,18 @@
         }
 
         function setupEventListeners() {
-            // Login/Logout
             document.getElementById('doLogin').addEventListener('click', doLogin);
             document.getElementById('closeLogin').addEventListener('click', function() {
                 document.getElementById('loginModal').classList.add('hidden');
             });
             document.getElementById('logoutBtn').addEventListener('click', logout);
             
-            // Content management
             document.getElementById('addContentBtn').addEventListener('click', addContent);
             document.getElementById('updatePasswords').addEventListener('click', updatePasswords);
             document.getElementById('exportJson').addEventListener('click', exportData);
             document.getElementById('importJson').addEventListener('click', importData);
             document.getElementById('heartImage').addEventListener('click', uploadHeart);
             
-            // Sync functionality
             document.getElementById('generateSyncCode').addEventListener('click', generateSyncCode);
             document.getElementById('copySyncCode').addEventListener('click', copySyncCode);
             document.getElementById('connectToAdmin').addEventListener('click', connectToAdmin);
@@ -692,12 +675,11 @@
             document.getElementById('resetSync').addEventListener('click', resetSync);
             document.getElementById('syncInterval').addEventListener('change', updateSyncInterval);
             
-            // Title editing
             document.getElementById('siteTitle').addEventListener('blur', function() {
                 if (currentUser && currentUser.role === 'admin') {
                     appData.settings.title = this.textContent;
                     saveData();
-                    setTimeout(pushDataToCloud, 1000);
+                    if (syncConfig.syncCode) setTimeout(pushDataToCloud, 1000);
                 }
             });
             
@@ -705,7 +687,7 @@
                 if (currentUser && currentUser.role === 'admin') {
                     appData.settings.subtitle = this.textContent;
                     saveData();
-                    setTimeout(pushDataToCloud, 1000);
+                    if (syncConfig.syncCode) setTimeout(pushDataToCloud, 1000);
                 }
             });
         }
@@ -768,16 +750,14 @@
         // ============================================
 
         function startAutoSync() {
-            if (autoSyncInterval) {
-                clearInterval(autoSyncInterval);
-            }
+            if (autoSyncInterval) clearInterval(autoSyncInterval);
             
             if ((syncConfig.isAdmin && syncConfig.syncCode) || (!syncConfig.isAdmin && syncConfig.connectedTo)) {
                 const interval = syncConfig.autoSyncInterval * 60000;
                 autoSyncInterval = setInterval(autoSync, interval);
                 
                 setTimeout(autoSync, 2000);
-                updateAutoSyncStatus('Auto-sync started: ' + syncConfig.autoSyncInterval + ' minutes');
+                updateAutoSyncStatus('Auto-sync active: ' + syncConfig.autoSyncInterval + ' min');
             } else {
                 updateAutoSyncStatus('Not connected to any device');
             }
@@ -811,13 +791,13 @@
                 syncConfig.lastSync = new Date().toISOString();
                 saveSyncConfig();
                 
-                appData.activity.push(`Data auto-synced to cloud at ${new Date().toLocaleString()}`);
+                appData.activity.push(`Data synced to cloud at ${new Date().toLocaleString()}`);
                 saveData();
                 
                 updateAutoSyncStatus('Data pushed to cloud');
                 
             } catch (error) {
-                updateAutoSyncStatus('Sync failed: ' + error.message, 'error');
+                updateAutoSyncStatus('Sync failed', 'error');
             }
         }
 
@@ -828,7 +808,7 @@
                 const syncData = localStorage.getItem('gift_cloud_' + syncConfig.connectedTo);
                 
                 if (!syncData) {
-                    updateAutoSyncStatus('No data found from admin', 'error');
+                    updateAutoSyncStatus('No data from admin', 'error');
                     return;
                 }
                 
@@ -855,7 +835,7 @@
                 }
                 
             } catch (error) {
-                updateAutoSyncStatus('Sync failed: ' + error.message, 'error');
+                updateAutoSyncStatus('Sync failed', 'error');
             }
         }
 
@@ -915,7 +895,7 @@
         }
 
         function resetSync() {
-            if (confirm('Reset all sync connections? This will disconnect from all devices.')) {
+            if (confirm('Reset all sync connections?')) {
                 syncConfig.syncCode = null;
                 syncConfig.connectedTo = null;
                 syncConfig.lastSync = null;
@@ -1026,9 +1006,7 @@
             setTimeout(() => {
                 notification.style.opacity = '0';
                 setTimeout(() => {
-                    if (notification.parentNode) {
-                        notification.remove();
-                    }
+                    if (notification.parentNode) notification.remove();
                 }, 300);
             }, 5000);
             
@@ -1097,9 +1075,11 @@
             
             saveData();
             renderAll();
-            showNotification('Message added! Auto-syncing to receiver...', 'success');
+            showNotification('Message added!', 'success');
             
-            setTimeout(pushDataToCloud, 1000);
+            if (syncConfig.syncCode) {
+                setTimeout(pushDataToCloud, 1000);
+            }
         }
 
         function updatePasswords() {
@@ -1126,7 +1106,9 @@
             saveData();
             showNotification('Passwords updated!', 'success');
             
-            setTimeout(pushDataToCloud, 1000);
+            if (syncConfig.syncCode) {
+                setTimeout(pushDataToCloud, 1000);
+            }
         }
 
         function uploadHeart() {
@@ -1145,7 +1127,7 @@
                     document.getElementById('heartImage').src = e.target.result;
                     appData.activity.push(`Admin updated heart image at ${new Date().toLocaleString()}`);
                     saveData();
-                    setTimeout(pushDataToCloud, 1000);
+                    if (syncConfig.syncCode) setTimeout(pushDataToCloud, 1000);
                 };
                 reader.readAsDataURL(file);
             };
@@ -1180,7 +1162,7 @@
                             saveData();
                             renderAll();
                             showNotification('Data imported!', 'success');
-                            setTimeout(pushDataToCloud, 1000);
+                            if (syncConfig.syncCode) setTimeout(pushDataToCloud, 1000);
                         }
                     } catch (err) {
                         alert('Invalid JSON file');
@@ -1210,7 +1192,7 @@
             if (changed) {
                 saveData();
                 renderAll();
-                setTimeout(pushDataToCloud, 1000);
+                if (syncConfig.syncCode) setTimeout(pushDataToCloud, 1000);
             }
         }
 
@@ -1228,17 +1210,20 @@
                     document.getElementById('adminSyncSection').style.display = 'block';
                     document.getElementById('receiverSyncSection').style.display = 'none';
                     updateSyncCodeDisplay();
+                    
+                    document.getElementById('siteTitle').contentEditable = true;
+                    document.getElementById('subtitle').contentEditable = true;
                 } else {
                     document.getElementById('adminSyncSection').style.display = 'none';
                     document.getElementById('receiverSyncSection').style.display = 'block';
+                    
+                    document.getElementById('siteTitle').contentEditable = false;
+                    document.getElementById('subtitle').contentEditable = false;
                 }
                 
                 document.getElementById('syncInterval').value = syncConfig.autoSyncInterval;
                 updateLastSyncTime();
                 updateConnectedDevices();
-                
-                document.getElementById('siteTitle').contentEditable = (currentUser.role === 'admin');
-                document.getElementById('subtitle').contentEditable = (currentUser.role === 'admin');
             }
             
             const today = new Date().toISOString().split('T')[0];
@@ -1392,7 +1377,7 @@
                 appData.activity.push(`Admin edited "${message.title}" at ${new Date().toLocaleString()}`);
                 saveData();
                 renderAll();
-                setTimeout(pushDataToCloud, 1000);
+                if (syncConfig.syncCode) setTimeout(pushDataToCloud, 1000);
             }
         };
 
@@ -1404,7 +1389,7 @@
                 appData.activity.push(`Admin deleted a message at ${new Date().toLocaleString()}`);
                 saveData();
                 renderAll();
-                setTimeout(pushDataToCloud, 1000);
+                if (syncConfig.syncCode) setTimeout(pushDataToCloud, 1000);
             }
         };
 
@@ -1428,7 +1413,7 @@
             saveData();
             renderAll();
             
-            if (currentUser.role === 'admin') {
+            if (currentUser.role === 'admin' && syncConfig.syncCode) {
                 setTimeout(pushDataToCloud, 1000);
             }
         };
@@ -1485,9 +1470,7 @@
                 document.body.appendChild(confetti);
                 
                 setTimeout(() => {
-                    if (confetti.parentNode) {
-                        confetti.remove();
-                    }
+                    if (confetti.parentNode) confetti.remove();
                 }, 3000);
             }
         }

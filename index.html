@@ -579,16 +579,14 @@
     <!-- Notification Container -->
     <div id="notificationContainer"></div>
 
-    <!-- Include QR Code Library -->
     <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 
     <script>
         // ============================================
-        // GIFT APP - DEBUGGED & TESTED VERSION
+        // GIFT APP - SIMPLIFIED FIXED VERSION
         // ============================================
         
-        // App Configuration
-        const STORAGE_KEY = 'gift_app_auto_sync_v2';
+        const STORAGE_KEY = 'gift_app_auto_sync_fixed';
         const SYNC_CONFIG_KEY = 'gift_sync_config';
         
         const DEFAULT_DATA = {
@@ -607,11 +605,9 @@
             reminders: []
         };
 
-        // Load or initialize data
         let appData = JSON.parse(localStorage.getItem(STORAGE_KEY)) || DEFAULT_DATA;
         let currentUser = null;
         
-        // Load sync configuration
         let syncConfig = JSON.parse(localStorage.getItem(SYNC_CONFIG_KEY)) || {
             isAdmin: false,
             syncCode: null,
@@ -625,21 +621,39 @@
         let lastMessageCount = appData.messages.length;
 
         // ============================================
-        // INITIALIZATION
+        // INITIALIZATION - SIMPLIFIED
         // ============================================
 
         document.addEventListener('DOMContentLoaded', function() {
-            initializeApp();
+            console.log('App loading...');
+            
+            // Setup tab switching - SIMPLIFIED
+            setupTabs();
+            
+            // Setup event listeners
+            setupEventListeners();
+            
+            // Initial render
+            renderAll();
+            
+            // Start auto-sync if connected
+            if (syncConfig.connectedTo || syncConfig.syncCode) {
+                startAutoSync();
+            }
+            
+            // Check for scheduled releases
+            setInterval(checkScheduledReleases, 60000);
+            
+            console.log('App loaded successfully');
         });
 
-        function initializeApp() {
-            console.log('Initializing app...');
-            
-            // Setup tab switching
-            document.querySelectorAll('.tab-button').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const tab = this.dataset.tab;
-                    document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
+        function setupTabs() {
+            const tabs = document.querySelectorAll('.tab-button');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    // Remove active class from all tabs
+                    tabs.forEach(t => t.classList.remove('active'));
+                    // Add active class to clicked tab
                     this.classList.add('active');
                     
                     // Hide all panels
@@ -649,23 +663,10 @@
                     document.getElementById('syncView').classList.add('hidden');
                     
                     // Show selected panel
-                    document.getElementById(tab + 'View').classList.remove('hidden');
+                    const tabName = this.getAttribute('data-tab');
+                    document.getElementById(tabName + 'View').classList.remove('hidden');
                 });
             });
-
-            // Setup event listeners
-            setupEventListeners();
-            
-            // Initial render
-            renderAll();
-            
-            // Start auto-sync if connected
-            startAutoSync();
-            
-            // Check for scheduled releases
-            setInterval(checkScheduledReleases, 60000);
-            
-            console.log('App initialized successfully');
         }
 
         function setupEventListeners() {
@@ -683,25 +684,30 @@
             document.getElementById('importJson').addEventListener('click', importData);
             document.getElementById('heartImage').addEventListener('click', uploadHeart);
             
-            // Title/subtitle editing
-            document.getElementById('siteTitle').addEventListener('click', makeEditable);
-            document.getElementById('subtitle').addEventListener('click', makeEditable);
-            
             // Sync functionality
             document.getElementById('generateSyncCode').addEventListener('click', generateSyncCode);
             document.getElementById('copySyncCode').addEventListener('click', copySyncCode);
-            document.getElementById('shareViaWhatsApp').addEventListener('click', shareViaWhatsApp);
             document.getElementById('connectToAdmin').addEventListener('click', connectToAdmin);
             document.getElementById('manualSync').addEventListener('click', manualSync);
             document.getElementById('resetSync').addEventListener('click', resetSync);
             document.getElementById('syncInterval').addEventListener('change', updateSyncInterval);
             
-            // Show sync instructions
-            document.getElementById('loginName').addEventListener('focus', function() {
-                document.getElementById('syncHint').style.display = 'block';
+            // Title editing
+            document.getElementById('siteTitle').addEventListener('blur', function() {
+                if (currentUser && currentUser.role === 'admin') {
+                    appData.settings.title = this.textContent;
+                    saveData();
+                    setTimeout(pushDataToCloud, 1000);
+                }
             });
             
-            console.log('Event listeners setup complete');
+            document.getElementById('subtitle').addEventListener('blur', function() {
+                if (currentUser && currentUser.role === 'admin') {
+                    appData.settings.subtitle = this.textContent;
+                    saveData();
+                    setTimeout(pushDataToCloud, 1000);
+                }
+            });
         }
 
         // ============================================
@@ -729,32 +735,23 @@
                 currentUser = { name: name, role: role };
                 document.getElementById('userLabel').textContent = `${name} (${role})`;
                 
-                // Update sync config
                 syncConfig.isAdmin = (role === 'admin');
                 saveSyncConfig();
                 
-                // Log activity
                 appData.activity.push(`${name} logged in as ${role} at ${new Date().toLocaleString()}`);
                 saveData();
                 
-                // Show app, hide login
                 document.getElementById('loginModal').classList.add('hidden');
                 document.getElementById('app').classList.remove('hidden');
                 
-                // Show confetti
                 showConfetti();
-                
-                // Render all
                 renderAll();
                 
-                // Show notification for new user
                 if (role === 'admin' && !syncConfig.syncCode) {
                     setTimeout(() => {
                         showNotification('Generate a sync code to share with receiver', 'info');
                     }, 1000);
                 }
-                
-                console.log('Login successful:', { name, role });
             } else {
                 alert('Invalid credentials');
             }
@@ -764,9 +761,6 @@
             currentUser = null;
             document.getElementById('app').classList.add('hidden');
             document.getElementById('loginModal').classList.remove('hidden');
-            document.getElementById('loginName').value = '';
-            document.getElementById('loginPass').value = '';
-            console.log('User logged out');
         }
 
         // ============================================
@@ -774,22 +768,16 @@
         // ============================================
 
         function startAutoSync() {
-            // Clear any existing interval
             if (autoSyncInterval) {
                 clearInterval(autoSyncInterval);
-                autoSyncInterval = null;
             }
             
-            // Only start if connected
             if ((syncConfig.isAdmin && syncConfig.syncCode) || (!syncConfig.isAdmin && syncConfig.connectedTo)) {
                 const interval = syncConfig.autoSyncInterval * 60000;
                 autoSyncInterval = setInterval(autoSync, interval);
                 
-                // Do initial sync
                 setTimeout(autoSync, 2000);
-                
                 updateAutoSyncStatus('Auto-sync started: ' + syncConfig.autoSyncInterval + ' minutes');
-                console.log('Auto-sync started with interval:', interval);
             } else {
                 updateAutoSyncStatus('Not connected to any device');
             }
@@ -798,13 +786,9 @@
         function autoSync() {
             if (!currentUser) return;
             
-            console.log('Auto-sync running...');
-            
             if (syncConfig.isAdmin && syncConfig.syncCode) {
-                // Admin: Push data to cloud
                 pushDataToCloud();
             } else if (!syncConfig.isAdmin && syncConfig.connectedTo) {
-                // Receiver: Pull data from cloud
                 pullDataFromCloud();
             }
             
@@ -812,10 +796,7 @@
         }
 
         function pushDataToCloud() {
-            if (!syncConfig.syncCode) {
-                console.log('No sync code, skipping push');
-                return;
-            }
+            if (!syncConfig.syncCode) return;
             
             try {
                 const syncData = {
@@ -825,80 +806,60 @@
                     syncCode: syncConfig.syncCode
                 };
                 
-                // Store in localStorage with sync code as key
                 localStorage.setItem('gift_cloud_' + syncConfig.syncCode, JSON.stringify(syncData));
                 
-                // Update last sync
                 syncConfig.lastSync = new Date().toISOString();
                 saveSyncConfig();
                 
-                // Log activity
                 appData.activity.push(`Data auto-synced to cloud at ${new Date().toLocaleString()}`);
                 saveData();
                 
                 updateAutoSyncStatus('Data pushed to cloud');
-                console.log('Data pushed to cloud');
                 
             } catch (error) {
-                console.error('Auto-sync error:', error);
                 updateAutoSyncStatus('Sync failed: ' + error.message, 'error');
             }
         }
 
         function pullDataFromCloud() {
-            if (!syncConfig.connectedTo) {
-                console.log('Not connected to admin, skipping pull');
-                return;
-            }
+            if (!syncConfig.connectedTo) return;
             
             try {
-                // Get data from localStorage using sync code
                 const syncData = localStorage.getItem('gift_cloud_' + syncConfig.connectedTo);
                 
                 if (!syncData) {
                     updateAutoSyncStatus('No data found from admin', 'error');
-                    console.log('No cloud data found for code:', syncConfig.connectedTo);
                     return;
                 }
                 
                 const parsedData = JSON.parse(syncData);
-                
-                // Check if there are new messages
                 const newMessageCount = parsedData.appData.messages.length;
+                
                 if (newMessageCount > lastMessageCount) {
                     const newMessages = newMessageCount - lastMessageCount;
                     
-                    // Show notification for new messages
                     showNotification(`📨 ${newMessages} new message(s) from admin!`, 'success');
                     
-                    // Update app data
                     appData = parsedData.appData;
                     saveData();
                     
-                    // Update last sync
                     syncConfig.lastSync = new Date().toISOString();
                     saveSyncConfig();
                     
-                    // Re-render everything
                     renderAll();
                     
                     updateAutoSyncStatus(`${newMessages} new messages synced`);
-                    console.log(`${newMessages} new messages synced`);
-                    
-                    // Update message count
                     lastMessageCount = newMessageCount;
                 } else {
                     updateAutoSyncStatus('Already up to date');
                 }
                 
             } catch (error) {
-                console.error('Auto-sync error:', error);
                 updateAutoSyncStatus('Sync failed: ' + error.message, 'error');
             }
         }
 
         function manualSync() {
-            console.log('Manual sync triggered');
             if (syncConfig.isAdmin) {
                 pushDataToCloud();
             } else {
@@ -916,29 +877,19 @@
                 return;
             }
             
-            // Generate 6-digit code
             const code = Math.floor(100000 + Math.random() * 900000).toString();
             syncConfig.syncCode = code;
             syncConfig.lastSync = new Date().toISOString();
             saveSyncConfig();
             
-            // Update display
             updateSyncCodeDisplay();
-            
-            // Generate QR code
             generateQRCode(code);
             
-            // Generate shareable link
             const shareLink = window.location.origin + window.location.pathname + '?sync=' + code;
             document.getElementById('syncLink').value = shareLink;
             
-            // Show notification
             showNotification('Sync code generated! Share it with receiver', 'success');
-            
-            // Auto-push initial data
             setTimeout(pushDataToCloud, 1000);
-            
-            console.log('Sync code generated:', code);
         }
 
         function connectToAdmin() {
@@ -949,26 +900,18 @@
                 return;
             }
             
-            // Try to connect
             syncConfig.connectedTo = code;
             syncConfig.lastSync = new Date().toISOString();
             saveSyncConfig();
             
-            // Show success message
             document.getElementById('connectionStatus').textContent = '✓ Connected to admin!';
             document.getElementById('connectionStatus').className = 'sync-status sync-success';
             document.getElementById('connectionStatus').style.display = 'block';
             
-            // Start auto-sync
             startAutoSync();
-            
-            // Show notification
             showNotification('Connected to admin! Auto-sync started', 'success');
             
-            // Do initial sync
             setTimeout(pullDataFromCloud, 2000);
-            
-            console.log('Connected to admin with code:', code);
         }
 
         function resetSync() {
@@ -976,10 +919,8 @@
                 syncConfig.syncCode = null;
                 syncConfig.connectedTo = null;
                 syncConfig.lastSync = null;
-                syncConfig.devices = [];
                 saveSyncConfig();
                 
-                // Clear interval
                 if (autoSyncInterval) {
                     clearInterval(autoSyncInterval);
                     autoSyncInterval = null;
@@ -987,8 +928,6 @@
                 
                 renderAll();
                 showNotification('Sync connections reset', 'info');
-                
-                console.log('Sync reset complete');
             }
         }
 
@@ -999,7 +938,6 @@
             startAutoSync();
             
             showNotification(`Auto-sync interval set to ${interval} minutes`, 'info');
-            console.log('Sync interval updated to:', interval);
         }
 
         // ============================================
@@ -1017,7 +955,6 @@
             const qrContainer = document.getElementById('qrCode');
             qrContainer.innerHTML = '';
             
-            // Simple QR code generation using canvas
             const canvas = document.createElement('canvas');
             QRCode.toCanvas(canvas, code, {
                 width: 180,
@@ -1028,8 +965,7 @@
                 }
             }, function(error) {
                 if (error) {
-                    console.error('QR code error:', error);
-                    qrContainer.innerHTML = '<div style="padding: 20px; color: #666;">QR Code Error</div>';
+                    qrContainer.innerHTML = '<div style="padding: 20px; color: #666;">QR Code</div>';
                 } else {
                     qrContainer.appendChild(canvas);
                 }
@@ -1041,14 +977,6 @@
                 navigator.clipboard.writeText(syncConfig.syncCode)
                     .then(() => showNotification('Code copied to clipboard', 'success'))
                     .catch(() => alert('Failed to copy code'));
-            }
-        }
-
-        function shareViaWhatsApp() {
-            if (syncConfig.syncCode) {
-                const text = `Join my Gift App! Sync code: ${syncConfig.syncCode}\n\nOpen the app and enter this code to receive messages automatically.`;
-                const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
-                window.open(url, '_blank');
             }
         }
 
@@ -1095,10 +1023,8 @@
             
             container.appendChild(notification);
             
-            // Auto-remove after 5 seconds
             setTimeout(() => {
                 notification.style.opacity = '0';
-                notification.style.transform = 'translateX(100%)';
                 setTimeout(() => {
                     if (notification.parentNode) {
                         notification.remove();
@@ -1106,7 +1032,6 @@
                 }, 300);
             }, 5000);
             
-            // Close button
             notification.querySelector('.notification-close').addEventListener('click', () => {
                 notification.remove();
             });
@@ -1148,7 +1073,6 @@
                 seenBy: []
             };
             
-            // Handle audio attachment
             const audioFile = document.getElementById('attachAudio').files[0];
             if (audioFile) {
                 const reader = new FileReader();
@@ -1166,7 +1090,6 @@
             appData.messages.push(message);
             appData.activity.push(`Admin added "${message.title}" at ${new Date().toLocaleString()}`);
             
-            // Clear form
             document.getElementById('contentTitle').value = '';
             document.getElementById('contentText').value = '';
             document.getElementById('scheduleDate').value = '';
@@ -1176,10 +1099,7 @@
             renderAll();
             showNotification('Message added! Auto-syncing to receiver...', 'success');
             
-            // Auto-sync to cloud
             setTimeout(pushDataToCloud, 1000);
-            
-            console.log('Message added:', message.title);
         }
 
         function updatePasswords() {
@@ -1200,17 +1120,13 @@
             appData.settings.credentials.receiverPass = receiverPass;
             appData.activity.push(`Admin updated passwords at ${new Date().toLocaleString()}`);
             
-            // Clear password fields
             document.getElementById('adminPassword').value = '';
             document.getElementById('receiverPassword').value = '';
             
             saveData();
             showNotification('Passwords updated!', 'success');
             
-            // Auto-sync
             setTimeout(pushDataToCloud, 1000);
-            
-            console.log('Passwords updated');
         }
 
         function uploadHeart() {
@@ -1236,42 +1152,6 @@
             input.click();
         }
 
-        function makeEditable(e) {
-            if (!currentUser || currentUser.role !== 'admin') return;
-            
-            const element = e.target;
-            element.contentEditable = true;
-            element.focus();
-            
-            const originalText = element.textContent;
-            
-            function saveChanges() {
-                element.contentEditable = false;
-                element.onblur = null;
-                
-                if (element.textContent !== originalText) {
-                    if (element.id === 'siteTitle') {
-                        appData.settings.title = element.textContent;
-                    } else if (element.id === 'subtitle') {
-                        appData.settings.subtitle = element.textContent;
-                    }
-                    appData.activity.push(`Admin updated ${element.id} at ${new Date().toLocaleString()}`);
-                    saveData();
-                    setTimeout(pushDataToCloud, 1000);
-                }
-            }
-            
-            element.onblur = saveChanges;
-            
-            // Also save on Enter key
-            element.onkeydown = function(e) {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    saveChanges();
-                }
-            };
-        }
-
         function exportData() {
             const dataStr = JSON.stringify(appData, null, 2);
             const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
@@ -1281,8 +1161,6 @@
             linkElement.setAttribute('href', dataUri);
             linkElement.setAttribute('download', exportFileDefaultName);
             linkElement.click();
-            
-            console.log('Data exported');
         }
 
         function importData() {
@@ -1341,14 +1219,10 @@
         // ============================================
 
         function renderAll() {
-            console.log('Rendering app...');
-            
-            // Update header
             document.getElementById('siteTitle').textContent = appData.settings.title;
             document.getElementById('subtitle').textContent = appData.settings.subtitle;
             document.getElementById('heartImage').src = appData.settings.frontImage;
             
-            // Show/hide sync sections based on role
             if (currentUser) {
                 if (currentUser.role === 'admin') {
                     document.getElementById('adminSyncSection').style.display = 'block';
@@ -1359,17 +1233,14 @@
                     document.getElementById('receiverSyncSection').style.display = 'block';
                 }
                 
-                // Update sync interval selector
                 document.getElementById('syncInterval').value = syncConfig.autoSyncInterval;
-                
-                // Update last sync time
                 updateLastSyncTime();
-                
-                // Update connected devices
                 updateConnectedDevices();
+                
+                document.getElementById('siteTitle').contentEditable = (currentUser.role === 'admin');
+                document.getElementById('subtitle').contentEditable = (currentUser.role === 'admin');
             }
             
-            // Today's message
             const today = new Date().toISOString().split('T')[0];
             let todayMessage = appData.messages.find(m => 
                 m.scheduled === today && m.released
@@ -1382,7 +1253,6 @@
                     '<div class="muted-note">No message for today yet. Check back soon! 💝</div>';
             }
             
-            // Archive messages
             const archiveContent = document.getElementById('archiveContent');
             if (appData.messages.length > 0) {
                 archiveContent.innerHTML = appData.messages
@@ -1394,7 +1264,6 @@
                 archiveContent.innerHTML = '<div class="muted-note">No messages yet.</div>';
             }
             
-            // Content list for admin
             const contentList = document.getElementById('contentList');
             if (appData.messages.length > 0) {
                 contentList.innerHTML = appData.messages
@@ -1420,7 +1289,6 @@
                 contentList.innerHTML = '<div class="muted-note">No messages yet.</div>';
             }
             
-            // Activity log
             const activityLog = document.getElementById('activityLog');
             activityLog.innerHTML = appData.activity
                 .slice()
@@ -1428,8 +1296,6 @@
                 .slice(0, 20)
                 .map(a => `<div style="padding: 6px 0; border-bottom: 1px solid #eee;">${a}</div>`)
                 .join('');
-            
-            console.log('Render complete');
         }
 
         function renderMessage(message) {
@@ -1452,7 +1318,6 @@
                 `;
             }
             
-            // Add comments section
             if (message.comments && message.comments.length > 0) {
                 html += `
                     <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #eee;">
@@ -1467,7 +1332,6 @@
                 `;
             }
             
-            // Add comment button
             if (currentUser) {
                 html += `
                     <div style="margin-top: 15px; display: flex; gap: 10px;">
@@ -1513,7 +1377,7 @@
         }
 
         // ============================================
-        // GLOBAL FUNCTIONS (for button onclick)
+        // GLOBAL FUNCTIONS
         // ============================================
 
         window.editMessage = function(messageId) {
@@ -1564,7 +1428,6 @@
             saveData();
             renderAll();
             
-            // If admin added comment, sync it
             if (currentUser.role === 'admin') {
                 setTimeout(pushDataToCloud, 1000);
             }

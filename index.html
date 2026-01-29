@@ -1,90 +1,1633 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title id="pageTitle">Happy Birthday 💖</title>
-<link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>💖 Gift For You</title>
+    <style>
+        :root {
+            --bg1: #e6f6ff;
+            --bg2: #eef7ff;
+            --primary: #7cc1ff;
+            --accent: #9b8cff;
+            --accent2: #7f6bff;
+            --pink: #ff6b9d;
+            --card: #fff;
+            --text: #222;
+        }
+        * {
+            box-sizing: border-box;
+        }
+        html, body {
+            height: 100%;
+            margin: 0;
+            font-family: Inter, Segoe UI, Arial;
+            background: linear-gradient(180deg, var(--bg1), var(--bg2));
+            color: var(--text);
+            -webkit-font-smoothing: antialiased;
+        }
+        .modal {
+            position: fixed;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0,0,0,0.45);
+            backdrop-filter: blur(6px);
+            z-index: 999;
+            transition: opacity 400ms ease, visibility 400ms ease;
+        }
+        .modal-box {
+            background: white;
+            padding: 24px;
+            border-radius: 16px;
+            max-width: 380px;
+            width: 94%;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.2);
+        }
+        .hidden {
+            display: none !important;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px;
+            gap: 16px;
+            background: white;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        }
+        .left {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+        }
+        .heart {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            cursor: pointer;
+            border: 5px solid rgba(255,255,255,0.6);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+        .titles h1 {
+            font-size: 1.4rem;
+            margin: 0;
+            color: #ff6b9d;
+        }
+        .subtitle {
+            color: #666;
+            margin-top: 4px;
+            font-size: 0.95rem;
+        }
+        .container {
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 16px;
+        }
+        .controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 12px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+        .btn {
+            padding: 10px 18px;
+            border-radius: 12px;
+            border: 0;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white;
+            cursor: pointer;
+            font-weight: 500;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(124, 193, 255, 0.3);
+        }
+        .ghost {
+            background: transparent;
+            border: 1px solid rgba(0,0,0,0.1);
+            color: #555;
+            padding: 8px 14px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .ghost:hover {
+            background: rgba(0,0,0,0.03);
+        }
+        .primary {
+            background: linear-gradient(135deg, var(--pink), var(--accent2));
+        }
+        .panel {
+            background: var(--card);
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.05);
+            margin-bottom: 16px;
+        }
+        .form-row {
+            margin-bottom: 16px;
+        }
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            color: #555;
+        }
+        .form-row input, textarea, select {
+            width: 100%;
+            padding: 10px 14px;
+            border-radius: 10px;
+            border: 1px solid #e0e0e0;
+            font-size: 1rem;
+            transition: border 0.2s;
+        }
+        .form-row input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(124, 193, 255, 0.1);
+        }
+        .row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-top: 12px;
+        }
+        .activity {
+            max-height: 300px;
+            overflow: auto;
+            padding: 12px;
+            background: #f8f9ff;
+            border-radius: 10px;
+            border: 1px solid #eee;
+            font-size: 0.9rem;
+        }
+        .msg {
+            padding: 16px;
+            border-radius: 12px;
+            background: white;
+            margin-bottom: 16px;
+            box-shadow: 0 5px 20px rgba(20,20,60,0.05);
+            border-left: 4px solid var(--primary);
+        }
+        .meta {
+            font-size: 0.85rem;
+            color: #777;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .comment {
+            background: #f8f9ff;
+            border-radius: 10px;
+            padding: 10px;
+            margin-top: 10px;
+            border: 1px solid #eef;
+        }
+        .muted-note {
+            font-size: 0.85rem;
+            color: #888;
+            font-style: italic;
+        }
+        small {
+            color: #888;
+        }
+        .history-entry {
+            font-size: 0.8rem;
+            opacity: 0.8;
+            margin-top: 6px;
+            padding-left: 10px;
+            border-left: 3px solid #f0f0f5;
+        }
+        .user-label {
+            padding: 6px 12px;
+            background: rgba(124, 193, 255, 0.1);
+            border-radius: 20px;
+            font-size: 0.9rem;
+            color: var(--primary);
+        }
+        .credentials-section {
+            background: #f8f9ff;
+            padding: 16px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border: 1px solid #eef;
+        }
+        @media (max-width: 720px) {
+            .heart { width: 80px; height: 80px; }
+            .titles h1 { font-size: 1.2rem; }
+            .container { padding: 12px; }
+            .controls { flex-direction: column; align-items: stretch; }
+            .btn, .ghost { width: 100%; text-align: center; }
+        }
+        .confetti {
+            position: fixed;
+            width: 20px;
+            height: 20px;
+            pointer-events: none;
+            font-size: 20px;
+            animation: fall 2s linear forwards;
+            z-index: 1000;
+        }
+        @keyframes fall {
+            0% { transform: translateY(-100px) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+        }
+        .tab-buttons {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        .tab-button {
+            padding: 8px 16px;
+            background: transparent;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            color: #666;
+            transition: all 0.2s;
+        }
+        .tab-button.active {
+            background: rgba(124, 193, 255, 0.1);
+            color: var(--primary);
+            font-weight: 500;
+        }
+        .audio-player {
+            margin-top: 10px;
+            width: 100%;
+            border-radius: 10px;
+        }
+        .reminder-badge {
+            background: #fff0f0;
+            color: #ff6b6b;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            margin-left: 8px;
+        }
+        .sync-status {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            margin-left: 8px;
+        }
+        .sync-success {
+            background: #e8f7ef;
+            color: #27ae60;
+        }
+        .sync-error {
+            background: #ffe8e8;
+            color: #e74c3c;
+        }
+        .sync-loading {
+            background: #fff8e1;
+            color: #f39c12;
+        }
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 16px;
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            max-width: 350px;
+            animation: slideIn 0.3s ease;
+            border-left: 4px solid var(--pink);
+        }
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        .notification-icon {
+            font-size: 24px;
+        }
+        .notification-content {
+            flex: 1;
+        }
+        .notification-close {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: #999;
+        }
+        .qr-container {
+            text-align: center;
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+            margin-top: 20px;
+        }
+        .qr-code {
+            width: 200px;
+            height: 200px;
+            margin: 0 auto;
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #eee;
+        }
+        .code-display {
+            font-family: monospace;
+            font-size: 24px;
+            letter-spacing: 8px;
+            background: #f8f9ff;
+            padding: 12px;
+            border-radius: 8px;
+            margin: 10px 0;
+            color: #27ae60;
+            font-weight: bold;
+        }
+        .auto-sync-info {
+            background: #e8f7ef;
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: #27ae60;
+        }
+    </style>
 </head>
 <body>
-<div id="loginModal" class="modal visible-opacity">
-  <div class="modal-box">
-    <h2>Login</h2>
-    <input id="loginName" placeholder="Your name" autocomplete="off">
-    <select id="loginRole">
-      <option value="receiver">Receiver</option>
-      <option value="admin">Admin</option>
-    </select>
-    <input id="loginPass" type="password" placeholder="Password">
-    <div class="row">
-      <button id="doLogin" class="btn primary">Login</button>
-      <button id="closeLogin" class="btn ghost">Close</button>
+    <!-- Login Modal -->
+    <div id="loginModal" class="modal">
+        <div class="modal-box">
+            <h2 style="margin-top: 0; color: var(--pink);">💖 Welcome</h2>
+            <div class="form-row">
+                <input id="loginName" placeholder="Your name" autocomplete="off">
+            </div>
+            <div class="form-row">
+                <select id="loginRole">
+                    <option value="">Select Role</option>
+                    <option value="receiver">Receiver 💝</option>
+                    <option value="admin">Admin ✨</option>
+                </select>
+            </div>
+            <div class="form-row">
+                <input id="loginPass" type="password" placeholder="Password">
+            </div>
+            <div class="row">
+                <button id="doLogin" class="btn primary" style="flex: 1;">Login</button>
+                <button id="closeLogin" class="btn ghost">Close</button>
+            </div>
+            <div id="syncHint" class="muted-note" style="margin-top: 15px; display: none;">
+                <p><strong>📱 One-Time Setup:</strong></p>
+                <p>1. Admin: Generate sync code</p>
+                <p>2. Share code with receiver</p>
+                <p>3. That's it! Auto-sync starts</p>
+            </div>
+        </div>
     </div>
-    <div class="muted">Default: admin/admin • receiver/receiver</div>
-  </div>
-</div>
 
-<div id="app" class="app hidden-opacity">
-  <header class="header">
-    <div class="left">
-      <img id="heartImage" src="heart.jpg" class="heart" alt="heart" />
-      <div class="titles">
-        <h1 id="siteTitle" contenteditable="false">Happy Birthday 💖</h1>
-        <div id="subtitle" class="subtitle" contenteditable="false">Every day with you is a new chapter in my favorite story.</div>
-      </div>
+    <!-- Main App -->
+    <div id="app" class="hidden">
+        <header class="header">
+            <div class="left">
+                <img id="heartImage" src="https://images.unsplash.com/photo-1518568814500-bf0f8d125f46?w=150&h=150&fit=crop&crop=face" class="heart" alt="Heart">
+                <div class="titles">
+                    <h1 id="siteTitle" contenteditable="false">💝 Gift For You</h1>
+                    <div id="subtitle" class="subtitle" contenteditable="false">Every moment with you is special</div>
+                </div>
+            </div>
+            <div class="right">
+                <div id="userLabel" class="user-label">Not logged in</div>
+                <button id="logoutBtn" class="btn ghost">Logout</button>
+            </div>
+        </header>
+
+        <main class="container">
+            <div class="tab-buttons">
+                <button class="tab-button active" data-tab="read">📖 Read</button>
+                <button class="tab-button" data-tab="archive">📚 Archive</button>
+                <button class="tab-button" data-tab="admin">⚙️ Admin</button>
+                <button class="tab-button" data-tab="sync">🔗 Sync</button>
+            </div>
+
+            <!-- Read Tab -->
+            <section id="readView" class="panel">
+                <h2 style="color: var(--pink); margin-top: 0;">Today's Message ✨</h2>
+                <div id="todayContent"></div>
+            </section>
+
+            <!-- Archive Tab -->
+            <section id="archiveView" class="panel hidden">
+                <h2 style="color: var(--pink); margin-top: 0;">All Messages 💌</h2>
+                <div id="archiveContent"></div>
+            </section>
+
+            <!-- Admin Tab -->
+            <section id="adminPanel" class="panel hidden">
+                <h2 style="color: var(--pink); margin-top: 0;">Admin Panel ⚙️</h2>
+                
+                <!-- Password Management -->
+                <div class="credentials-section">
+                    <h3 style="margin-top: 0;">🔑 Change Passwords</h3>
+                    <div class="form-row">
+                        <label>Admin Password</label>
+                        <input id="adminPassword" type="password" placeholder="New admin password">
+                    </div>
+                    <div class="form-row">
+                        <label>Receiver Password</label>
+                        <input id="receiverPassword" type="password" placeholder="New receiver password">
+                    </div>
+                    <button id="updatePasswords" class="btn primary">Update Passwords</button>
+                </div>
+
+                <!-- Content Management -->
+                <h3>📝 Add New Message</h3>
+                <div class="form-row">
+                    <select id="contentType">
+                        <option value="message">Message 💌</option>
+                        <option value="poem">Poem ✍️</option>
+                        <option value="memory">Memory 🌟</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <input id="contentTitle" placeholder="Title (optional)">
+                </div>
+                <div class="form-row">
+                    <textarea id="contentText" placeholder="Write your message here..." rows="4"></textarea>
+                </div>
+                <div class="form-row">
+                    <label>Schedule for later (optional)</label>
+                    <input id="scheduleDate" type="date">
+                    <input id="scheduleTime" type="time" value="09:00" style="margin-top: 8px;">
+                </div>
+                <div class="form-row">
+                    <label>Attach audio message (optional)</label>
+                    <input id="attachAudio" type="file" accept="audio/*">
+                </div>
+                <div class="row">
+                    <button id="addContentBtn" class="btn primary">Upload Message</button>
+                    <button id="exportJson" class="btn ghost">Export Backup</button>
+                    <button id="importJson" class="btn ghost">Import Backup</button>
+                </div>
+
+                <!-- Manage Existing Content -->
+                <h3 style="margin-top: 30px;">📋 All Messages</h3>
+                <div id="contentList"></div>
+
+                <!-- Activity Log -->
+                <h3 style="margin-top: 30px;">📊 Activity Log</h3>
+                <div id="activityLog" class="activity"></div>
+            </section>
+
+            <!-- Sync Tab -->
+            <section id="syncView" class="panel hidden">
+                <h2 style="color: var(--pink); margin-top: 0;">🔗 Device Sync</h2>
+                
+                <!-- Auto Sync Status -->
+                <div class="auto-sync-info">
+                    <strong>🔄 Auto-Sync Status:</strong>
+                    <div id="autoSyncStatus">Checking...</div>
+                    <div id="lastSyncTime" class="small"></div>
+                </div>
+
+                <!-- For Admin: Generate/Share Code -->
+                <div id="adminSyncSection" class="credentials-section" style="display: none;">
+                    <h3 style="margin-top: 0;">📤 Share with Receiver</h3>
+                    <div class="muted-note">
+                        Generate a sync code and share it with receiver. After this one-time setup, messages will sync automatically.
+                    </div>
+                    
+                    <div class="form-row">
+                        <label>Your Sync Code</label>
+                        <div id="syncCodeDisplay" class="code-display">Click Generate</div>
+                    </div>
+                    
+                    <div class="row">
+                        <button id="generateSyncCode" class="btn primary">Generate New Code</button>
+                        <button id="copySyncCode" class="btn ghost">Copy Code</button>
+                        <button id="shareViaWhatsApp" class="btn ghost">Share via WhatsApp</button>
+                    </div>
+                    
+                    <div class="qr-container" style="display: none;" id="qrSection">
+                        <h4>📱 Scan QR Code</h4>
+                        <div class="qr-code" id="qrCode"></div>
+                        <p class="muted-note">Receiver can scan this QR code instead of entering code manually</p>
+                    </div>
+                    
+                    <div class="form-row">
+                        <label>Or share this link:</label>
+                        <input id="syncLink" type="text" readonly style="background: #f8f9ff; font-family: monospace;">
+                    </div>
+                </div>
+
+                <!-- For Receiver: Enter Code -->
+                <div id="receiverSyncSection" class="credentials-section" style="display: none;">
+                    <h3 style="margin-top: 0;">📥 Connect to Admin</h3>
+                    <div class="muted-note">
+                        Enter the sync code shared by admin. This is a one-time setup.
+                    </div>
+                    
+                    <div class="form-row">
+                        <label>Enter Admin's Sync Code</label>
+                        <input id="enterSyncCode" type="text" placeholder="Enter 6-digit code" maxlength="6" style="text-align: center; font-size: 18px; letter-spacing: 8px;">
+                    </div>
+                    
+                    <div class="row">
+                        <button id="connectToAdmin" class="btn primary">Connect</button>
+                        <button id="scanQRCode" class="btn ghost" style="display: none;">Scan QR Code</button>
+                    </div>
+                    
+                    <div id="connectionStatus" class="sync-status" style="display: none; margin-top: 10px;"></div>
+                </div>
+
+                <!-- Connected Devices -->
+                <div class="credentials-section">
+                    <h3 style="margin-top: 0;">📡 Connected Devices</h3>
+                    <div id="connectedDevices"></div>
+                </div>
+
+                <!-- Manual Sync Controls -->
+                <div class="credentials-section">
+                    <h3 style="margin-top: 0;">⚙️ Sync Settings</h3>
+                    <div class="form-row">
+                        <label>Auto-sync interval</label>
+                        <select id="syncInterval">
+                            <option value="1">Every 1 minute</option>
+                            <option value="2" selected>Every 2 minutes</option>
+                            <option value="5">Every 5 minutes</option>
+                            <option value="10">Every 10 minutes</option>
+                        </select>
+                    </div>
+                    <div class="row">
+                        <button id="manualSync" class="btn ghost">Sync Now</button>
+                        <button id="resetSync" class="btn ghost">Reset Connection</button>
+                    </div>
+                </div>
+            </section>
+        </main>
     </div>
-    <div class="right">
-      <div id="userLabel" class="muted-note">Not logged in</div>
-      <button id="toggleAudioBtn" class="btn ghost hidden">Play</button>
-      <button id="logoutBtn" class="btn ghost hidden">Logout</button>
-    </div>
-  </header>
 
-  <main class="container">
-    <section class="controls">
-      <button id="openAdminPanel" class="btn ghost hidden">Admin Panel</button>
-      <button id="openArchive" class="btn ghost">All Messages</button>
-      <button id="openRead" class="btn ghost">Read Content</button>
-      <div class="muted-note">Tip: Tap the heart (admin) to change photo. Tap any editable text to edit (admin).</div>
-    </section>
+    <!-- Notification Container -->
+    <div id="notificationContainer"></div>
 
-    <section id="readView" class="panel">
-      <h2>Today's Message</h2>
-      <div id="todayContent"></div>
-    </section>
+    <!-- Include QR Code Library -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 
-    <section id="archiveView" class="panel hidden">
-      <h2>All Messages & Poems</h2>
-      <div id="archiveContent"></div>
-    </section>
+    <script>
+        // ============================================
+        // GIFT APP - DEBUGGED & TESTED VERSION
+        // ============================================
+        
+        // App Configuration
+        const STORAGE_KEY = 'gift_app_auto_sync_v2';
+        const SYNC_CONFIG_KEY = 'gift_sync_config';
+        
+        const DEFAULT_DATA = {
+            settings: {
+                title: '💝 Gift For You',
+                subtitle: 'Every moment with you is special',
+                frontImage: 'https://images.unsplash.com/photo-1518568814500-bf0f8d125f46?w=150&h=150&fit=crop&crop=face',
+                credentials: {
+                    adminPass: 'admin123',
+                    receiverPass: 'love123'
+                }
+            },
+            messages: [],
+            nextId: 1,
+            activity: [],
+            reminders: []
+        };
 
-    <section id="adminPanel" class="panel hidden">
-      <h2>Admin Panel</h2>
-      <div class="form-row">
-        <label>Type</label>
-        <select id="contentType"><option value="message">Message</option><option value="poem">Poem</option></select>
-      </div>
-      <div class="form-row"><label>Title</label><input id="contentTitle"></div>
-      <div class="form-row"><label>Content</label><textarea id="contentText"></textarea></div>
-      <div class="form-row"><label>Schedule date</label><input id="scheduleDate" type="date"></div>
-      <div class="form-row"><label>Schedule time</label><input id="scheduleTime" type="time" value="09:00"></div>
-      <div class="form-row"><label>Attach audio (optional)</label><input id="attachAudio" type="file" accept="audio/*"></div>
-      <div class="row">
-        <button id="addContentBtn" class="btn primary">Upload Content</button>
-        <button id="exportJson" class="btn ghost">Export JSON</button>
-        <button id="importJson" class="btn ghost">Import JSON</button>
-      </div>
-      <h3>Manage Content</h3>
-      <div id="contentList"></div>
-      <h3>Activity Log</h3>
-      <div id="activityLog" class="activity"></div>
-    </section>
-  </main>
+        // Load or initialize data
+        let appData = JSON.parse(localStorage.getItem(STORAGE_KEY)) || DEFAULT_DATA;
+        let currentUser = null;
+        
+        // Load sync configuration
+        let syncConfig = JSON.parse(localStorage.getItem(SYNC_CONFIG_KEY)) || {
+            isAdmin: false,
+            syncCode: null,
+            connectedTo: null,
+            lastSync: null,
+            autoSyncInterval: 2,
+            devices: []
+        };
+        
+        let autoSyncInterval = null;
+        let lastMessageCount = appData.messages.length;
 
-  <button id="fab" class="fab">+</button>
-  <audio id="bgPlayer" loop></audio>
-</div>
+        // ============================================
+        // INITIALIZATION
+        // ============================================
 
-<script src="script.js"></script>
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeApp();
+        });
+
+        function initializeApp() {
+            console.log('Initializing app...');
+            
+            // Setup tab switching
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const tab = this.dataset.tab;
+                    document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Hide all panels
+                    document.getElementById('readView').classList.add('hidden');
+                    document.getElementById('archiveView').classList.add('hidden');
+                    document.getElementById('adminPanel').classList.add('hidden');
+                    document.getElementById('syncView').classList.add('hidden');
+                    
+                    // Show selected panel
+                    document.getElementById(tab + 'View').classList.remove('hidden');
+                });
+            });
+
+            // Setup event listeners
+            setupEventListeners();
+            
+            // Initial render
+            renderAll();
+            
+            // Start auto-sync if connected
+            startAutoSync();
+            
+            // Check for scheduled releases
+            setInterval(checkScheduledReleases, 60000);
+            
+            console.log('App initialized successfully');
+        }
+
+        function setupEventListeners() {
+            // Login/Logout
+            document.getElementById('doLogin').addEventListener('click', doLogin);
+            document.getElementById('closeLogin').addEventListener('click', function() {
+                document.getElementById('loginModal').classList.add('hidden');
+            });
+            document.getElementById('logoutBtn').addEventListener('click', logout);
+            
+            // Content management
+            document.getElementById('addContentBtn').addEventListener('click', addContent);
+            document.getElementById('updatePasswords').addEventListener('click', updatePasswords);
+            document.getElementById('exportJson').addEventListener('click', exportData);
+            document.getElementById('importJson').addEventListener('click', importData);
+            document.getElementById('heartImage').addEventListener('click', uploadHeart);
+            
+            // Title/subtitle editing
+            document.getElementById('siteTitle').addEventListener('click', makeEditable);
+            document.getElementById('subtitle').addEventListener('click', makeEditable);
+            
+            // Sync functionality
+            document.getElementById('generateSyncCode').addEventListener('click', generateSyncCode);
+            document.getElementById('copySyncCode').addEventListener('click', copySyncCode);
+            document.getElementById('shareViaWhatsApp').addEventListener('click', shareViaWhatsApp);
+            document.getElementById('connectToAdmin').addEventListener('click', connectToAdmin);
+            document.getElementById('manualSync').addEventListener('click', manualSync);
+            document.getElementById('resetSync').addEventListener('click', resetSync);
+            document.getElementById('syncInterval').addEventListener('change', updateSyncInterval);
+            
+            // Show sync instructions
+            document.getElementById('loginName').addEventListener('focus', function() {
+                document.getElementById('syncHint').style.display = 'block';
+            });
+            
+            console.log('Event listeners setup complete');
+        }
+
+        // ============================================
+        // LOGIN & USER MANAGEMENT
+        // ============================================
+
+        function doLogin() {
+            const name = document.getElementById('loginName').value.trim();
+            const role = document.getElementById('loginRole').value;
+            const pass = document.getElementById('loginPass').value;
+            
+            if (!name || !role) {
+                alert('Please enter name and select role');
+                return;
+            }
+            
+            let isValid = false;
+            if (role === 'admin' && pass === appData.settings.credentials.adminPass) {
+                isValid = true;
+            } else if (role === 'receiver' && pass === appData.settings.credentials.receiverPass) {
+                isValid = true;
+            }
+            
+            if (isValid) {
+                currentUser = { name: name, role: role };
+                document.getElementById('userLabel').textContent = `${name} (${role})`;
+                
+                // Update sync config
+                syncConfig.isAdmin = (role === 'admin');
+                saveSyncConfig();
+                
+                // Log activity
+                appData.activity.push(`${name} logged in as ${role} at ${new Date().toLocaleString()}`);
+                saveData();
+                
+                // Show app, hide login
+                document.getElementById('loginModal').classList.add('hidden');
+                document.getElementById('app').classList.remove('hidden');
+                
+                // Show confetti
+                showConfetti();
+                
+                // Render all
+                renderAll();
+                
+                // Show notification for new user
+                if (role === 'admin' && !syncConfig.syncCode) {
+                    setTimeout(() => {
+                        showNotification('Generate a sync code to share with receiver', 'info');
+                    }, 1000);
+                }
+                
+                console.log('Login successful:', { name, role });
+            } else {
+                alert('Invalid credentials');
+            }
+        }
+
+        function logout() {
+            currentUser = null;
+            document.getElementById('app').classList.add('hidden');
+            document.getElementById('loginModal').classList.remove('hidden');
+            document.getElementById('loginName').value = '';
+            document.getElementById('loginPass').value = '';
+            console.log('User logged out');
+        }
+
+        // ============================================
+        // AUTO-SYNC SYSTEM
+        // ============================================
+
+        function startAutoSync() {
+            // Clear any existing interval
+            if (autoSyncInterval) {
+                clearInterval(autoSyncInterval);
+                autoSyncInterval = null;
+            }
+            
+            // Only start if connected
+            if ((syncConfig.isAdmin && syncConfig.syncCode) || (!syncConfig.isAdmin && syncConfig.connectedTo)) {
+                const interval = syncConfig.autoSyncInterval * 60000;
+                autoSyncInterval = setInterval(autoSync, interval);
+                
+                // Do initial sync
+                setTimeout(autoSync, 2000);
+                
+                updateAutoSyncStatus('Auto-sync started: ' + syncConfig.autoSyncInterval + ' minutes');
+                console.log('Auto-sync started with interval:', interval);
+            } else {
+                updateAutoSyncStatus('Not connected to any device');
+            }
+        }
+
+        function autoSync() {
+            if (!currentUser) return;
+            
+            console.log('Auto-sync running...');
+            
+            if (syncConfig.isAdmin && syncConfig.syncCode) {
+                // Admin: Push data to cloud
+                pushDataToCloud();
+            } else if (!syncConfig.isAdmin && syncConfig.connectedTo) {
+                // Receiver: Pull data from cloud
+                pullDataFromCloud();
+            }
+            
+            updateLastSyncTime();
+        }
+
+        function pushDataToCloud() {
+            if (!syncConfig.syncCode) {
+                console.log('No sync code, skipping push');
+                return;
+            }
+            
+            try {
+                const syncData = {
+                    appData: appData,
+                    timestamp: new Date().toISOString(),
+                    syncedBy: currentUser.name,
+                    syncCode: syncConfig.syncCode
+                };
+                
+                // Store in localStorage with sync code as key
+                localStorage.setItem('gift_cloud_' + syncConfig.syncCode, JSON.stringify(syncData));
+                
+                // Update last sync
+                syncConfig.lastSync = new Date().toISOString();
+                saveSyncConfig();
+                
+                // Log activity
+                appData.activity.push(`Data auto-synced to cloud at ${new Date().toLocaleString()}`);
+                saveData();
+                
+                updateAutoSyncStatus('Data pushed to cloud');
+                console.log('Data pushed to cloud');
+                
+            } catch (error) {
+                console.error('Auto-sync error:', error);
+                updateAutoSyncStatus('Sync failed: ' + error.message, 'error');
+            }
+        }
+
+        function pullDataFromCloud() {
+            if (!syncConfig.connectedTo) {
+                console.log('Not connected to admin, skipping pull');
+                return;
+            }
+            
+            try {
+                // Get data from localStorage using sync code
+                const syncData = localStorage.getItem('gift_cloud_' + syncConfig.connectedTo);
+                
+                if (!syncData) {
+                    updateAutoSyncStatus('No data found from admin', 'error');
+                    console.log('No cloud data found for code:', syncConfig.connectedTo);
+                    return;
+                }
+                
+                const parsedData = JSON.parse(syncData);
+                
+                // Check if there are new messages
+                const newMessageCount = parsedData.appData.messages.length;
+                if (newMessageCount > lastMessageCount) {
+                    const newMessages = newMessageCount - lastMessageCount;
+                    
+                    // Show notification for new messages
+                    showNotification(`📨 ${newMessages} new message(s) from admin!`, 'success');
+                    
+                    // Update app data
+                    appData = parsedData.appData;
+                    saveData();
+                    
+                    // Update last sync
+                    syncConfig.lastSync = new Date().toISOString();
+                    saveSyncConfig();
+                    
+                    // Re-render everything
+                    renderAll();
+                    
+                    updateAutoSyncStatus(`${newMessages} new messages synced`);
+                    console.log(`${newMessages} new messages synced`);
+                    
+                    // Update message count
+                    lastMessageCount = newMessageCount;
+                } else {
+                    updateAutoSyncStatus('Already up to date');
+                }
+                
+            } catch (error) {
+                console.error('Auto-sync error:', error);
+                updateAutoSyncStatus('Sync failed: ' + error.message, 'error');
+            }
+        }
+
+        function manualSync() {
+            console.log('Manual sync triggered');
+            if (syncConfig.isAdmin) {
+                pushDataToCloud();
+            } else {
+                pullDataFromCloud();
+            }
+        }
+
+        // ============================================
+        // SYNC CODE MANAGEMENT
+        // ============================================
+
+        function generateSyncCode() {
+            if (!currentUser || currentUser.role !== 'admin') {
+                alert('Only admin can generate sync codes');
+                return;
+            }
+            
+            // Generate 6-digit code
+            const code = Math.floor(100000 + Math.random() * 900000).toString();
+            syncConfig.syncCode = code;
+            syncConfig.lastSync = new Date().toISOString();
+            saveSyncConfig();
+            
+            // Update display
+            updateSyncCodeDisplay();
+            
+            // Generate QR code
+            generateQRCode(code);
+            
+            // Generate shareable link
+            const shareLink = window.location.origin + window.location.pathname + '?sync=' + code;
+            document.getElementById('syncLink').value = shareLink;
+            
+            // Show notification
+            showNotification('Sync code generated! Share it with receiver', 'success');
+            
+            // Auto-push initial data
+            setTimeout(pushDataToCloud, 1000);
+            
+            console.log('Sync code generated:', code);
+        }
+
+        function connectToAdmin() {
+            const code = document.getElementById('enterSyncCode').value.trim();
+            
+            if (!code || code.length !== 6) {
+                alert('Please enter a valid 6-digit code');
+                return;
+            }
+            
+            // Try to connect
+            syncConfig.connectedTo = code;
+            syncConfig.lastSync = new Date().toISOString();
+            saveSyncConfig();
+            
+            // Show success message
+            document.getElementById('connectionStatus').textContent = '✓ Connected to admin!';
+            document.getElementById('connectionStatus').className = 'sync-status sync-success';
+            document.getElementById('connectionStatus').style.display = 'block';
+            
+            // Start auto-sync
+            startAutoSync();
+            
+            // Show notification
+            showNotification('Connected to admin! Auto-sync started', 'success');
+            
+            // Do initial sync
+            setTimeout(pullDataFromCloud, 2000);
+            
+            console.log('Connected to admin with code:', code);
+        }
+
+        function resetSync() {
+            if (confirm('Reset all sync connections? This will disconnect from all devices.')) {
+                syncConfig.syncCode = null;
+                syncConfig.connectedTo = null;
+                syncConfig.lastSync = null;
+                syncConfig.devices = [];
+                saveSyncConfig();
+                
+                // Clear interval
+                if (autoSyncInterval) {
+                    clearInterval(autoSyncInterval);
+                    autoSyncInterval = null;
+                }
+                
+                renderAll();
+                showNotification('Sync connections reset', 'info');
+                
+                console.log('Sync reset complete');
+            }
+        }
+
+        function updateSyncInterval() {
+            const interval = parseInt(document.getElementById('syncInterval').value);
+            syncConfig.autoSyncInterval = interval;
+            saveSyncConfig();
+            startAutoSync();
+            
+            showNotification(`Auto-sync interval set to ${interval} minutes`, 'info');
+            console.log('Sync interval updated to:', interval);
+        }
+
+        // ============================================
+        // HELPER FUNCTIONS
+        // ============================================
+
+        function updateSyncCodeDisplay() {
+            if (syncConfig.syncCode) {
+                document.getElementById('syncCodeDisplay').textContent = syncConfig.syncCode;
+                document.getElementById('qrSection').style.display = 'block';
+            }
+        }
+
+        function generateQRCode(code) {
+            const qrContainer = document.getElementById('qrCode');
+            qrContainer.innerHTML = '';
+            
+            // Simple QR code generation using canvas
+            const canvas = document.createElement('canvas');
+            QRCode.toCanvas(canvas, code, {
+                width: 180,
+                margin: 1,
+                color: {
+                    dark: '#000000',
+                    light: '#ffffff'
+                }
+            }, function(error) {
+                if (error) {
+                    console.error('QR code error:', error);
+                    qrContainer.innerHTML = '<div style="padding: 20px; color: #666;">QR Code Error</div>';
+                } else {
+                    qrContainer.appendChild(canvas);
+                }
+            });
+        }
+
+        function copySyncCode() {
+            if (syncConfig.syncCode) {
+                navigator.clipboard.writeText(syncConfig.syncCode)
+                    .then(() => showNotification('Code copied to clipboard', 'success'))
+                    .catch(() => alert('Failed to copy code'));
+            }
+        }
+
+        function shareViaWhatsApp() {
+            if (syncConfig.syncCode) {
+                const text = `Join my Gift App! Sync code: ${syncConfig.syncCode}\n\nOpen the app and enter this code to receive messages automatically.`;
+                const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
+                window.open(url, '_blank');
+            }
+        }
+
+        function updateAutoSyncStatus(message, type = 'success') {
+            const statusDiv = document.getElementById('autoSyncStatus');
+            if (statusDiv) {
+                statusDiv.textContent = message;
+                statusDiv.className = 'sync-status';
+                statusDiv.classList.add('sync-' + type);
+            }
+        }
+
+        function updateLastSyncTime() {
+            const timeDiv = document.getElementById('lastSyncTime');
+            if (timeDiv) {
+                if (syncConfig.lastSync) {
+                    const time = new Date(syncConfig.lastSync).toLocaleTimeString();
+                    timeDiv.textContent = `Last sync: ${time}`;
+                } else {
+                    timeDiv.textContent = 'Never synced';
+                }
+            }
+        }
+
+        function showNotification(message, type = 'info') {
+            const container = document.getElementById('notificationContainer');
+            if (!container) return;
+            
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            
+            const icons = {
+                success: '✅',
+                error: '❌',
+                info: '💡',
+                message: '💌'
+            };
+            
+            notification.innerHTML = `
+                <div class="notification-icon">${icons[type] || '💡'}</div>
+                <div class="notification-content">${message}</div>
+                <button class="notification-close">&times;</button>
+            `;
+            
+            container.appendChild(notification);
+            
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                notification.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.remove();
+                    }
+                }, 300);
+            }, 5000);
+            
+            // Close button
+            notification.querySelector('.notification-close').addEventListener('click', () => {
+                notification.remove();
+            });
+        }
+
+        // ============================================
+        // CONTENT MANAGEMENT
+        // ============================================
+
+        function addContent() {
+            if (!currentUser || currentUser.role !== 'admin') {
+                alert('Only admin can add content');
+                return;
+            }
+            
+            const type = document.getElementById('contentType').value;
+            const title = document.getElementById('contentTitle').value.trim();
+            const content = document.getElementById('contentText').value.trim();
+            const date = document.getElementById('scheduleDate').value;
+            const time = document.getElementById('scheduleTime').value || '09:00';
+            
+            if (!content) {
+                alert('Please write some content');
+                return;
+            }
+            
+            const newMessage = {
+                id: appData.nextId++,
+                type: type,
+                title: title || '(No title)',
+                content: content,
+                dateAdded: new Date().toISOString(),
+                scheduled: date || null,
+                scheduledTime: time,
+                released: !date,
+                postedOn: date ? null : new Date().toISOString(),
+                comments: [],
+                audio: null,
+                seenBy: []
+            };
+            
+            // Handle audio attachment
+            const audioFile = document.getElementById('attachAudio').files[0];
+            if (audioFile) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    newMessage.audio = e.target.result;
+                    finalizeAddContent(newMessage);
+                };
+                reader.readAsDataURL(audioFile);
+            } else {
+                finalizeAddContent(newMessage);
+            }
+        }
+
+        function finalizeAddContent(message) {
+            appData.messages.push(message);
+            appData.activity.push(`Admin added "${message.title}" at ${new Date().toLocaleString()}`);
+            
+            // Clear form
+            document.getElementById('contentTitle').value = '';
+            document.getElementById('contentText').value = '';
+            document.getElementById('scheduleDate').value = '';
+            document.getElementById('attachAudio').value = '';
+            
+            saveData();
+            renderAll();
+            showNotification('Message added! Auto-syncing to receiver...', 'success');
+            
+            // Auto-sync to cloud
+            setTimeout(pushDataToCloud, 1000);
+            
+            console.log('Message added:', message.title);
+        }
+
+        function updatePasswords() {
+            if (!currentUser || currentUser.role !== 'admin') {
+                alert('Only admin can update passwords');
+                return;
+            }
+            
+            const adminPass = document.getElementById('adminPassword').value.trim();
+            const receiverPass = document.getElementById('receiverPassword').value.trim();
+            
+            if (!adminPass || !receiverPass) {
+                alert('Please fill both password fields');
+                return;
+            }
+            
+            appData.settings.credentials.adminPass = adminPass;
+            appData.settings.credentials.receiverPass = receiverPass;
+            appData.activity.push(`Admin updated passwords at ${new Date().toLocaleString()}`);
+            
+            // Clear password fields
+            document.getElementById('adminPassword').value = '';
+            document.getElementById('receiverPassword').value = '';
+            
+            saveData();
+            showNotification('Passwords updated!', 'success');
+            
+            // Auto-sync
+            setTimeout(pushDataToCloud, 1000);
+            
+            console.log('Passwords updated');
+        }
+
+        function uploadHeart() {
+            if (!currentUser || currentUser.role !== 'admin') return;
+            
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+            input.onchange = function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    appData.settings.frontImage = e.target.result;
+                    document.getElementById('heartImage').src = e.target.result;
+                    appData.activity.push(`Admin updated heart image at ${new Date().toLocaleString()}`);
+                    saveData();
+                    setTimeout(pushDataToCloud, 1000);
+                };
+                reader.readAsDataURL(file);
+            };
+            input.click();
+        }
+
+        function makeEditable(e) {
+            if (!currentUser || currentUser.role !== 'admin') return;
+            
+            const element = e.target;
+            element.contentEditable = true;
+            element.focus();
+            
+            const originalText = element.textContent;
+            
+            function saveChanges() {
+                element.contentEditable = false;
+                element.onblur = null;
+                
+                if (element.textContent !== originalText) {
+                    if (element.id === 'siteTitle') {
+                        appData.settings.title = element.textContent;
+                    } else if (element.id === 'subtitle') {
+                        appData.settings.subtitle = element.textContent;
+                    }
+                    appData.activity.push(`Admin updated ${element.id} at ${new Date().toLocaleString()}`);
+                    saveData();
+                    setTimeout(pushDataToCloud, 1000);
+                }
+            }
+            
+            element.onblur = saveChanges;
+            
+            // Also save on Enter key
+            element.onkeydown = function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    saveChanges();
+                }
+            };
+        }
+
+        function exportData() {
+            const dataStr = JSON.stringify(appData, null, 2);
+            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+            const exportFileDefaultName = 'gift-app-backup.json';
+            
+            const linkElement = document.createElement('a');
+            linkElement.setAttribute('href', dataUri);
+            linkElement.setAttribute('download', exportFileDefaultName);
+            linkElement.click();
+            
+            console.log('Data exported');
+        }
+
+        function importData() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            input.onchange = function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const importedData = JSON.parse(e.target.result);
+                        if (confirm('Importing will replace all current data. Continue?')) {
+                            appData = importedData;
+                            saveData();
+                            renderAll();
+                            showNotification('Data imported!', 'success');
+                            setTimeout(pushDataToCloud, 1000);
+                        }
+                    } catch (err) {
+                        alert('Invalid JSON file');
+                    }
+                };
+                reader.readAsText(file);
+            };
+            input.click();
+        }
+
+        function checkScheduledReleases() {
+            const now = new Date();
+            let changed = false;
+            
+            appData.messages.forEach(message => {
+                if (message.released || !message.scheduled) return;
+                
+                const scheduledTime = new Date(message.scheduled + 'T' + (message.scheduledTime || '09:00'));
+                if (scheduledTime <= now) {
+                    message.released = true;
+                    message.postedOn = new Date().toISOString();
+                    appData.activity.push(`Message "${message.title}" released at ${new Date().toLocaleString()}`);
+                    changed = true;
+                }
+            });
+            
+            if (changed) {
+                saveData();
+                renderAll();
+                setTimeout(pushDataToCloud, 1000);
+            }
+        }
+
+        // ============================================
+        // RENDER FUNCTIONS
+        // ============================================
+
+        function renderAll() {
+            console.log('Rendering app...');
+            
+            // Update header
+            document.getElementById('siteTitle').textContent = appData.settings.title;
+            document.getElementById('subtitle').textContent = appData.settings.subtitle;
+            document.getElementById('heartImage').src = appData.settings.frontImage;
+            
+            // Show/hide sync sections based on role
+            if (currentUser) {
+                if (currentUser.role === 'admin') {
+                    document.getElementById('adminSyncSection').style.display = 'block';
+                    document.getElementById('receiverSyncSection').style.display = 'none';
+                    updateSyncCodeDisplay();
+                } else {
+                    document.getElementById('adminSyncSection').style.display = 'none';
+                    document.getElementById('receiverSyncSection').style.display = 'block';
+                }
+                
+                // Update sync interval selector
+                document.getElementById('syncInterval').value = syncConfig.autoSyncInterval;
+                
+                // Update last sync time
+                updateLastSyncTime();
+                
+                // Update connected devices
+                updateConnectedDevices();
+            }
+            
+            // Today's message
+            const today = new Date().toISOString().split('T')[0];
+            let todayMessage = appData.messages.find(m => 
+                m.scheduled === today && m.released
+            ) || appData.messages.filter(m => m.released).slice(-1)[0];
+            
+            if (todayMessage) {
+                document.getElementById('todayContent').innerHTML = renderMessage(todayMessage);
+            } else {
+                document.getElementById('todayContent').innerHTML = 
+                    '<div class="muted-note">No message for today yet. Check back soon! 💝</div>';
+            }
+            
+            // Archive messages
+            const archiveContent = document.getElementById('archiveContent');
+            if (appData.messages.length > 0) {
+                archiveContent.innerHTML = appData.messages
+                    .slice()
+                    .reverse()
+                    .map(m => `<div class="msg" data-id="${m.id}">${renderMessage(m)}</div>`)
+                    .join('');
+            } else {
+                archiveContent.innerHTML = '<div class="muted-note">No messages yet.</div>';
+            }
+            
+            // Content list for admin
+            const contentList = document.getElementById('contentList');
+            if (appData.messages.length > 0) {
+                contentList.innerHTML = appData.messages
+                    .slice()
+                    .reverse()
+                    .map(m => `
+                        <div style="padding: 12px; background: #f8f9ff; border-radius: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <strong>${m.title}</strong>
+                                <div class="small">${m.type} • ${new Date(m.dateAdded).toLocaleDateString()}</div>
+                                ${m.scheduled && !m.released ? '<span class="reminder-badge">Scheduled</span>' : ''}
+                            </div>
+                            ${currentUser && currentUser.role === 'admin' ? `
+                                <div style="display: flex; gap: 8px;">
+                                    <button class="ghost" onclick="window.editMessage(${m.id})">Edit</button>
+                                    <button class="ghost" onclick="window.deleteMessage(${m.id})">Delete</button>
+                                </div>
+                            ` : ''}
+                        </div>
+                    `)
+                    .join('');
+            } else {
+                contentList.innerHTML = '<div class="muted-note">No messages yet.</div>';
+            }
+            
+            // Activity log
+            const activityLog = document.getElementById('activityLog');
+            activityLog.innerHTML = appData.activity
+                .slice()
+                .reverse()
+                .slice(0, 20)
+                .map(a => `<div style="padding: 6px 0; border-bottom: 1px solid #eee;">${a}</div>`)
+                .join('');
+            
+            console.log('Render complete');
+        }
+
+        function renderMessage(message) {
+            let html = `
+                <div class="meta">
+                    <span>${message.type === 'poem' ? '✍️ Poem' : message.type === 'memory' ? '🌟 Memory' : '💌 Message'}</span>
+                    <span>${new Date(message.dateAdded).toLocaleDateString()}</span>
+                </div>
+                ${message.title ? `<h3 style="margin-top: 0; color: var(--pink);">${message.title}</h3>` : ''}
+                <div style="white-space: pre-line; line-height: 1.6;">${escapeHtml(message.content)}</div>
+            `;
+            
+            if (message.audio) {
+                html += `
+                    <div style="margin-top: 15px;">
+                        <audio controls class="audio-player">
+                            <source src="${message.audio}" type="audio/mpeg">
+                        </audio>
+                    </div>
+                `;
+            }
+            
+            // Add comments section
+            if (message.comments && message.comments.length > 0) {
+                html += `
+                    <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #eee;">
+                        <strong>Comments (${message.comments.length}):</strong>
+                        ${message.comments.map(c => `
+                            <div class="comment">
+                                <div class="small"><strong>${c.by}</strong> • ${new Date(c.when).toLocaleString()}</div>
+                                <div>${escapeHtml(c.text)}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+            
+            // Add comment button
+            if (currentUser) {
+                html += `
+                    <div style="margin-top: 15px; display: flex; gap: 10px;">
+                        <button class="ghost" onclick="window.addComment(${message.id})">Add Comment</button>
+                        ${currentUser.role === 'receiver' ? `
+                            <button class="ghost" onclick="window.setReminder(${message.id})">Set Reminder</button>
+                        ` : ''}
+                    </div>
+                `;
+            }
+            
+            return html;
+        }
+
+        function updateConnectedDevices() {
+            const devicesDiv = document.getElementById('connectedDevices');
+            if (!devicesDiv) return;
+            
+            if (currentUser && currentUser.role === 'admin' && syncConfig.syncCode) {
+                devicesDiv.innerHTML = `
+                    <div class="muted-note">
+                        <strong>Your sync code:</strong> ${syncConfig.syncCode}
+                        <br>
+                        Share this code with receiver. Once they enter it, messages will sync automatically every ${syncConfig.autoSyncInterval} minutes.
+                    </div>
+                `;
+            } else if (currentUser && currentUser.role === 'receiver' && syncConfig.connectedTo) {
+                devicesDiv.innerHTML = `
+                    <div class="muted-note sync-success">
+                        ✓ Connected to admin (Code: ${syncConfig.connectedTo})
+                        <br>
+                        Auto-syncing every ${syncConfig.autoSyncInterval} minutes
+                    </div>
+                `;
+            } else {
+                devicesDiv.innerHTML = `
+                    <div class="muted-note">
+                        Not connected to any device. 
+                        ${currentUser && currentUser.role === 'admin' ? 'Generate a sync code to share.' : 'Enter admin\'s sync code to connect.'}
+                    </div>
+                `;
+            }
+        }
+
+        // ============================================
+        // GLOBAL FUNCTIONS (for button onclick)
+        // ============================================
+
+        window.editMessage = function(messageId) {
+            if (!currentUser || currentUser.role !== 'admin') return;
+            
+            const message = appData.messages.find(m => m.id === messageId);
+            if (!message) return;
+            
+            const newContent = prompt('Edit message content:', message.content);
+            if (newContent !== null) {
+                message.content = newContent;
+                appData.activity.push(`Admin edited "${message.title}" at ${new Date().toLocaleString()}`);
+                saveData();
+                renderAll();
+                setTimeout(pushDataToCloud, 1000);
+            }
+        };
+
+        window.deleteMessage = function(messageId) {
+            if (!currentUser || currentUser.role !== 'admin') return;
+            
+            if (confirm('Are you sure you want to delete this message?')) {
+                appData.messages = appData.messages.filter(m => m.id !== messageId);
+                appData.activity.push(`Admin deleted a message at ${new Date().toLocaleString()}`);
+                saveData();
+                renderAll();
+                setTimeout(pushDataToCloud, 1000);
+            }
+        };
+
+        window.addComment = function(messageId) {
+            if (!currentUser) return;
+            
+            const text = prompt('Write your comment:');
+            if (!text) return;
+            
+            const message = appData.messages.find(m => m.id === messageId);
+            if (!message) return;
+            
+            if (!message.comments) message.comments = [];
+            message.comments.push({
+                by: currentUser.name,
+                when: new Date().toISOString(),
+                text: text
+            });
+            
+            appData.activity.push(`${currentUser.name} commented on "${message.title}" at ${new Date().toLocaleString()}`);
+            saveData();
+            renderAll();
+            
+            // If admin added comment, sync it
+            if (currentUser.role === 'admin') {
+                setTimeout(pushDataToCloud, 1000);
+            }
+        };
+
+        window.setReminder = function(messageId) {
+            if (!currentUser) return;
+            
+            const date = prompt('Enter reminder date (YYYY-MM-DD):');
+            const time = prompt('Enter reminder time (HH:MM):', '09:00');
+            
+            if (date && time) {
+                if (!appData.reminders) appData.reminders = [];
+                appData.reminders.push({
+                    id: appData.nextId++,
+                    messageId: messageId,
+                    userId: currentUser.name,
+                    when: `${date}T${time}`,
+                    created: new Date().toISOString()
+                });
+                
+                appData.activity.push(`${currentUser.name} set a reminder at ${new Date().toLocaleString()}`);
+                saveData();
+                showNotification('Reminder set!', 'success');
+            }
+        };
+
+        // ============================================
+        // UTILITY FUNCTIONS
+        // ============================================
+
+        function saveData() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+        }
+
+        function saveSyncConfig() {
+            localStorage.setItem(SYNC_CONFIG_KEY, JSON.stringify(syncConfig));
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function showConfetti() {
+            for (let i = 0; i < 50; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.innerHTML = ['💖', '💝', '✨', '🎉', '🎊', '❤️'][Math.floor(Math.random() * 6)];
+                confetti.style.left = Math.random() * 100 + 'vw';
+                confetti.style.fontSize = Math.random() * 20 + 10 + 'px';
+                confetti.style.animationDuration = Math.random() * 2 + 1 + 's';
+                document.body.appendChild(confetti);
+                
+                setTimeout(() => {
+                    if (confetti.parentNode) {
+                        confetti.remove();
+                    }
+                }, 3000);
+            }
+        }
+    </script>
 </body>
 </html>

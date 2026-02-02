@@ -5,45 +5,271 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>💖 Gift For You</title>
     <style>
-        /* SIMPLIFIED CSS - Remove all complex styles for now */
-        body {
-            font-family: Arial, sans-serif;
-            background: #f0f8ff;
-            margin: 0;
-            padding: 20px;
+        /* ============ ALL CSS STYLES ============ */
+        :root {
+            --bg1: #e6f6ff;
+            --bg2: #eef7ff;
+            --primary: #7cc1ff;
+            --accent: #9b8cff;
+            --accent2: #7f6bff;
+            --pink: #ff6b9d;
+            --card: #fff;
+            --text: #222;
         }
-        .hidden {
-            display: none;
+        * {
+            box-sizing: border-box;
+        }
+        html, body {
+            height: 100%;
+            margin: 0;
+            font-family: Inter, Segoe UI, Arial;
+            background: linear-gradient(180deg, var(--bg1), var(--bg2));
+            color: var(--text);
+            -webkit-font-smoothing: antialiased;
         }
         .modal {
             position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.5);
+            inset: 0;
             display: flex;
             align-items: center;
             justify-content: center;
+            background: rgba(0,0,0,0.45);
+            backdrop-filter: blur(6px);
+            z-index: 999;
         }
         .modal-box {
             background: white;
-            padding: 30px;
-            border-radius: 10px;
-            width: 300px;
+            padding: 24px;
+            border-radius: 16px;
+            max-width: 380px;
+            width: 94%;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.2);
         }
-        input, select, button {
-            width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-            box-sizing: border-box;
+        .hidden {
+            display: none !important;
         }
-        button {
-            background: #ff6b9d;
-            color: white;
-            border: none;
-            border-radius: 5px;
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px;
+            gap: 16px;
+            background: white;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        }
+        .left {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+        }
+        .heart {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
             cursor: pointer;
+            border: 5px solid rgba(255,255,255,0.6);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+        .titles h1 {
+            font-size: 1.4rem;
+            margin: 0;
+            color: #ff6b9d;
+        }
+        .subtitle {
+            color: #666;
+            margin-top: 4px;
+            font-size: 0.95rem;
+        }
+        .container {
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 16px;
+        }
+        .tab-buttons {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            flex-wrap: wrap;
+        }
+        .tab-button {
+            padding: 8px 16px;
+            background: transparent;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            color: #666;
+            transition: all 0.2s;
+        }
+        .tab-button.active {
+            background: rgba(124, 193, 255, 0.1);
+            color: var(--primary);
+            font-weight: 500;
+        }
+        .btn {
+            padding: 10px 18px;
+            border-radius: 12px;
+            border: 0;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white;
+            cursor: pointer;
+            font-weight: 500;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(124, 193, 255, 0.3);
+        }
+        .ghost {
+            background: transparent;
+            border: 1px solid rgba(0,0,0,0.1);
+            color: #555;
+            padding: 8px 14px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .ghost:hover {
+            background: rgba(0,0,0,0.03);
+        }
+        .primary {
+            background: linear-gradient(135deg, var(--pink), var(--accent2));
+        }
+        .panel {
+            background: var(--card);
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.05);
+            margin-bottom: 16px;
+        }
+        .form-row {
+            margin-bottom: 16px;
+        }
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            color: #555;
+        }
+        .form-row input, textarea, select {
+            width: 100%;
+            padding: 10px 14px;
+            border-radius: 10px;
+            border: 1px solid #e0e0e0;
+            font-size: 1rem;
+            transition: border 0.2s;
+        }
+        .form-row input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(124, 193, 255, 0.1);
+        }
+        .row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-top: 12px;
+        }
+        .activity {
+            max-height: 300px;
+            overflow: auto;
+            padding: 12px;
+            background: #f8f9ff;
+            border-radius: 10px;
+            border: 1px solid #eee;
+            font-size: 0.9rem;
+        }
+        .msg {
+            padding: 16px;
+            border-radius: 12px;
+            background: white;
+            margin-bottom: 16px;
+            box-shadow: 0 5px 20px rgba(20,20,60,0.05);
+            border-left: 4px solid var(--primary);
+        }
+        .meta {
+            font-size: 0.85rem;
+            color: #777;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .comment {
+            background: #f8f9ff;
+            border-radius: 10px;
+            padding: 10px;
+            margin-top: 10px;
+            border: 1px solid #eef;
+        }
+        .muted-note {
+            font-size: 0.85rem;
+            color: #888;
+            font-style: italic;
+        }
+        small {
+            color: #888;
+        }
+        .user-label {
+            padding: 6px 12px;
+            background: rgba(124, 193, 255, 0.1);
+            border-radius: 20px;
+            font-size: 0.9rem;
+            color: var(--primary);
+        }
+        .credentials-section {
+            background: #f8f9ff;
+            padding: 16px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border: 1px solid #eef;
+        }
+        @media (max-width: 720px) {
+            .heart { width: 80px; height: 80px; }
+            .titles h1 { font-size: 1.2rem; }
+            .container { padding: 12px; }
+            .tab-buttons { overflow-x: auto; }
+        }
+        .confetti {
+            position: fixed;
+            width: 20px;
+            height: 20px;
+            pointer-events: none;
+            font-size: 20px;
+            animation: fall 2s linear forwards;
+            z-index: 1000;
+        }
+        @keyframes fall {
+            0% { transform: translateY(-100px) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+        }
+        .audio-player {
+            margin-top: 10px;
+            width: 100%;
+            border-radius: 10px;
+        }
+        .password-section {
+            background: #fff5f5;
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 20px;
+            border: 1px solid #ffe6e6;
+        }
+        .comment-box {
+            margin-top: 10px;
+            display: flex;
+            gap: 8px;
+        }
+        .comment-box input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .comment-box button {
+            padding: 8px 16px;
         }
     </style>
 </head>
@@ -51,106 +277,263 @@
     <!-- Login Modal -->
     <div id="loginModal" class="modal">
         <div class="modal-box">
-            <h2 style="text-align: center;">💖 Welcome</h2>
-            <input id="loginName" placeholder="Your name" autocomplete="off">
-            <select id="loginRole">
-                <option value="">Select Role</option>
-                <option value="receiver">Receiver 💝</option>
-                <option value="admin">Admin ✨</option>
-            </select>
-            <input id="loginPass" type="password" placeholder="Password">
-            <button id="doLogin">Login</button>
-            <button id="closeLogin" style="background: #666;">Close</button>
+            <h2 style="margin-top: 0; color: var(--pink);">💖 Welcome</h2>
+            <div class="form-row">
+                <input id="loginName" placeholder="Your name" autocomplete="off">
+            </div>
+            <div class="form-row">
+                <select id="loginRole">
+                    <option value="">Select Role</option>
+                    <option value="receiver">Receiver 💝</option>
+                    <option value="admin">Admin ✨</option>
+                </select>
+            </div>
+            <div class="form-row">
+                <input id="loginPass" type="password" placeholder="Password">
+            </div>
+            <div class="row">
+                <button id="doLogin" class="btn primary" style="flex: 1;">Login</button>
+                <button id="closeLogin" class="btn ghost">Close</button>
+            </div>
         </div>
     </div>
 
-    <!-- Main App (hidden initially) -->
+    <!-- Main App -->
     <div id="app" class="hidden">
-        <h1>💝 Gift App - Logged In</h1>
-        <button id="logoutBtn">Logout</button>
+        <header class="header">
+            <div class="left">
+                <img id="heartImage" src="https://images.unsplash.com/photo-1518568814500-bf0f8d125f46?w=150&h=150&fit=crop&crop=face" class="heart" alt="Heart">
+                <div class="titles">
+                    <h1 id="siteTitle">💝 Gift For You</h1>
+                    <div id="subtitle" class="subtitle">Every moment with you is special</div>
+                </div>
+            </div>
+            <div class="right">
+                <div id="userLabel" class="user-label">Not logged in</div>
+                <button id="logoutBtn" class="btn ghost">Logout</button>
+            </div>
+        </header>
+
+        <main class="container">
+            <div class="tab-buttons" id="tabButtons">
+                <button class="tab-button active" data-tab="read">📖 Read</button>
+                <button class="tab-button" data-tab="archive">📚 Archive</button>
+                <button class="tab-button hidden" data-tab="admin" id="adminTabBtn">⚙️ Admin</button>
+                <button class="tab-button" data-tab="sync">🔗 Sync</button>
+            </div>
+
+            <!-- Read Tab -->
+            <section id="readView" class="panel">
+                <h2 style="color: var(--pink); margin-top: 0;">Today's Message ✨</h2>
+                <div id="todayContent"></div>
+            </section>
+
+            <!-- Archive Tab -->
+            <section id="archiveView" class="panel hidden">
+                <h2 style="color: var(--pink); margin-top: 0;">All Messages 💌</h2>
+                <div id="archiveContent"></div>
+            </section>
+
+            <!-- Admin Tab -->
+            <section id="adminPanel" class="panel hidden">
+                <h2 style="color: var(--pink); margin-top: 0;">Admin Panel ⚙️</h2>
+                
+                <!-- Password Management -->
+                <div class="password-section">
+                    <h3 style="margin-top: 0; color: #ff6b6b;">🔑 Change Passwords</h3>
+                    
+                    <div class="form-row">
+                        <label>Current Admin Password (for verification)</label>
+                        <input id="currentAdminPass" type="password" placeholder="Enter current admin password">
+                    </div>
+                    
+                    <div class="form-row">
+                        <label>New Admin Password</label>
+                        <input id="newAdminPass" type="password" placeholder="Enter new admin password">
+                    </div>
+                    
+                    <div class="form-row">
+                        <label>Confirm New Admin Password</label>
+                        <input id="confirmAdminPass" type="password" placeholder="Confirm new admin password">
+                    </div>
+                    
+                    <div class="form-row">
+                        <label>New Receiver Password</label>
+                        <input id="newReceiverPass" type="password" placeholder="Enter new receiver password">
+                    </div>
+                    
+                    <div class="form-row">
+                        <label>Confirm New Receiver Password</label>
+                        <input id="confirmReceiverPass" type="password" placeholder="Confirm new receiver password">
+                    </div>
+                    
+                    <div class="row">
+                        <button id="updatePasswords" class="btn primary">Update Passwords</button>
+                        <button id="resetToDefault" class="btn ghost">Reset to Default</button>
+                    </div>
+                    
+                    <div id="passwordStatus" style="margin-top: 10px; font-size: 0.9rem;"></div>
+                </div>
+
+                <!-- Content Management -->
+                <div style="margin-top: 30px;">
+                    <h3>📝 Add New Message</h3>
+                    <div class="form-row">
+                        <select id="contentType">
+                            <option value="message">Message 💌</option>
+                            <option value="poem">Poem ✍️</option>
+                            <option value="memory">Memory 🌟</option>
+                        </select>
+                    </div>
+                    <div class="form-row">
+                        <input id="contentTitle" placeholder="Title (optional)">
+                    </div>
+                    <div class="form-row">
+                        <textarea id="contentText" placeholder="Write your message here..." rows="4"></textarea>
+                    </div>
+                    <div class="form-row">
+                        <label>Schedule for later (optional)</label>
+                        <input id="scheduleDate" type="date">
+                        <input id="scheduleTime" type="time" value="09:00" style="margin-top: 8px;">
+                    </div>
+                    <div class="form-row">
+                        <label>Attach audio message (optional)</label>
+                        <input id="attachAudio" type="file" accept="audio/*">
+                    </div>
+                    <div class="row">
+                        <button id="addContentBtn" class="btn primary">Add Message</button>
+                    </div>
+                </div>
+
+                <!-- Manage Existing Content -->
+                <div style="margin-top: 30px;">
+                    <h3>📋 All Messages</h3>
+                    <div id="contentList"></div>
+                </div>
+            </section>
+
+            <!-- Sync Tab -->
+            <section id="syncView" class="panel hidden">
+                <h2 style="color: var(--pink); margin-top: 0;">🔗 Device Sync</h2>
+                
+                <!-- For Admin: Generate/Share Code -->
+                <div id="adminSyncSection" class="credentials-section" style="display: none;">
+                    <h3 style="margin-top: 0;">📤 Share with Receiver</h3>
+                    
+                    <div class="form-row">
+                        <label>Your Sync Code</label>
+                        <div id="syncCodeDisplay" class="muted-note" style="padding: 10px; background: #f8f9ff; border-radius: 8px;">Not generated yet</div>
+                    </div>
+                    
+                    <div class="row">
+                        <button id="generateSyncCode" class="btn primary">Generate New Code</button>
+                        <button id="copySyncCode" class="btn ghost">Copy Code</button>
+                    </div>
+                </div>
+
+                <!-- For Receiver: Enter Code -->
+                <div id="receiverSyncSection" class="credentials-section" style="display: none;">
+                    <h3 style="margin-top: 0;">📥 Connect to Admin</h3>
+                    
+                    <div class="form-row">
+                        <label>Enter Admin's Sync Code</label>
+                        <input id="enterSyncCode" type="text" placeholder="Enter 6-digit code" maxlength="6" style="text-align: center; font-size: 18px;">
+                    </div>
+                    
+                    <div class="row">
+                        <button id="connectToAdmin" class="btn primary">Connect</button>
+                    </div>
+                </div>
+            </section>
+        </main>
     </div>
 
     <script>
-        // SIMPLE WORKING VERSION - All in one file
+        // ============ ALL JAVASCRIPT CODE ============
         
-        console.log("Script loaded!"); // Debug
+        // Storage keys
+        const STORAGE_KEY = 'gift_app_data';
+        const SYNC_CONFIG_KEY = 'gift_sync_config';
         
         // Default data
         const DEFAULT_DATA = {
             settings: {
+                title: '💝 Gift For You',
+                subtitle: 'Every moment with you is special',
+                frontImage: 'https://images.unsplash.com/photo-1518568814500-bf0f8d125f46?w=150&h=150&fit=crop&crop=face',
                 credentials: {
                     adminPass: 'admin123',
                     receiverPass: 'love123'
                 }
-            }
+            },
+            messages: [],
+            nextId: 1,
+            activity: []
         };
+
+        // Load data from localStorage
+        let appData = JSON.parse(localStorage.getItem(STORAGE_KEY)) || DEFAULT_DATA;
+        let currentUser = null;
         
-        // Get references to elements
-        const loginModal = document.getElementById('loginModal');
-        const app = document.getElementById('app');
-        const doLoginBtn = document.getElementById('doLogin');
-        const closeLoginBtn = document.getElementById('closeLogin');
-        const logoutBtn = document.getElementById('logoutBtn');
-        
-        // Wait for DOM to load
+        // Sync config
+        let syncConfig = JSON.parse(localStorage.getItem(SYNC_CONFIG_KEY)) || {
+            isAdmin: false,
+            syncCode: null,
+            connectedTo: null
+        };
+
+        // ============ INITIALIZATION ============
         document.addEventListener('DOMContentLoaded', function() {
-            console.log("DOM loaded - setting up event listeners");
+            console.log('App loading...');
             
             // Setup event listeners
-            doLoginBtn.addEventListener('click', doLogin);
-            closeLoginBtn.addEventListener('click', closeLogin);
-            logoutBtn.addEventListener('click', logout);
+            setupEventListeners();
+            setupTabs();
             
-            // Show login modal initially
-            loginModal.classList.remove('hidden');
+            // Start with login modal
+            document.getElementById('loginModal').classList.remove('hidden');
+            document.getElementById('app').classList.add('hidden');
+            
+            // Check for scheduled releases
+            setInterval(checkScheduledReleases, 60000);
         });
-        
-        // Login function - SIMPLIFIED
-        function doLogin() {
-            console.log("Login button clicked!"); // Debug
-            
-            const name = document.getElementById('loginName').value.trim();
-            const role = document.getElementById('loginRole').value;
-            const pass = document.getElementById('loginPass').value;
-            
-            console.log("Name:", name, "Role:", role, "Pass:", pass); // Debug
-            
-            if (!name || !role) {
-                alert('Please enter name and select role');
-                return;
-            }
-            
-            let isValid = false;
-            if (role === 'admin' && pass === DEFAULT_DATA.settings.credentials.adminPass) {
-                isValid = true;
-            } else if (role === 'receiver' && pass === DEFAULT_DATA.settings.credentials.receiverPass) {
-                isValid = true;
-            }
-            
-            console.log("Is valid?", isValid); // Debug
-            
-            if (isValid) {
-                // Hide login, show app
-                loginModal.classList.add('hidden');
-                app.classList.remove('hidden');
-                alert('Login successful! Welcome ' + name);
-            } else {
-                alert('Invalid credentials');
-            }
+
+        // ============ SETUP FUNCTIONS ============
+        function setupTabs() {
+            const tabs = document.querySelectorAll('.tab-button');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    // Remove active class from all tabs
+                    tabs.forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Hide all panels
+                    document.getElementById('readView').classList.add('hidden');
+                    document.getElementById('archiveView').classList.add('hidden');
+                    document.getElementById('adminPanel').classList.add('hidden');
+                    document.getElementById('syncView').classList.add('hidden');
+                    
+                    // Show selected panel
+                    const tabName = this.getAttribute('data-tab');
+                    document.getElementById(tabName + 'View').classList.remove('hidden');
+                });
+            });
         }
-        
-        function closeLogin() {
-            loginModal.classList.add('hidden');
-        }
-        
-        function logout() {
-            app.classList.add('hidden');
-            loginModal.classList.remove('hidden');
-            // Clear form
-            document.getElementById('loginName').value = '';
-            document.getElementById('loginPass').value = '';
-            document.getElementById('loginRole').selectedIndex = 0;
-        }
-    </script>
-</body>
-</html>
+
+        function setupEventListeners() {
+            // Login/Logout
+            document.getElementById('doLogin').addEventListener('click', doLogin);
+            document.getElementById('closeLogin').addEventListener('click', function() {
+                document.getElementById('loginModal').classList.add('hidden');
+            });
+            document.getElementById('logoutBtn').addEventListener('click', logout);
+            
+            // Admin functions
+            document.getElementById('addContentBtn').addEventListener('click', addContent);
+            document.getElementById('updatePasswords').addEventListener('click', updatePasswords);
+            document.getElementById('resetToDefault').addEventListener('click', resetToDefaultPasswords);
+            
+            // Sync functions
+            document.getElementById('generateSyncCode').addEventListener('click', generateSyncCode);
+            document.getElementById('copySyncCode').addEventListener('click', copySyncCode);
+            document.getElementById('co

@@ -1,4 +1,3 @@
-
 // Final single-file app logic
 const STORAGE_KEY = 'gift_for_you_final_v1';
 let appData = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null') || {
